@@ -4,7 +4,1117 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
   <title>eCRF Triệt Đốt Rung Nhĩ bằng RF - Nghiên Cứu Pilot (Bảng dữ liệu: RF)</title>
-  <link rel="stylesheet" href="css/styles.css" />
+  <style>
+/* Giao diện Lâm sàng eCRF - Nghiên cứu Pilot Triệt đốt Rung nhĩ bằng RF
+ * Thiết kế:
+ * - Menu điều hướng & 4 giai đoạn nằm bên tay trái (Sidebar), đóng/mở được, giữ cố định khi cuộn (sticky)
+ * - Tối ưu toàn diện cho Điện thoại (Mobile-first touch targets, font 16px chống auto-zoom iOS, Mobile Patient Cards)
+ */
+
+:root {
+  --primary: #1e40af;
+  --primary-hover: #1d4ed8;
+  --primary-light: #eff6ff;
+  --teal: #0f766e;
+  --teal-light: #f0fdfa;
+  --amber: #b45309;
+  --amber-light: #fffbeb;
+  --danger: #b91c1c;
+  --danger-light: #fef2f2;
+  --success: #15803d;
+  --success-light: #f0fdf4;
+  --slate-50: #f8fafc;
+  --slate-100: #f1f5f9;
+  --slate-200: #e2e8f0;
+  --slate-300: #cbd5e1;
+  --slate-400: #94a3b8;
+  --slate-600: #475569;
+  --slate-700: #334155;
+  --slate-800: #1e293b;
+  --slate-900: #0f172a;
+  --header-height: 60px;
+  --sidebar-width: 280px;
+  --sidebar-collapsed-width: 64px;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background-color: var(--slate-50);
+  color: var(--slate-800);
+  line-height: 1.5;
+  overflow-x: hidden;
+}
+
+/* ============================================================================
+   TOP HEADER (Sticky)
+   ============================================================================ */
+.app-header {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
+  color: #fff;
+  height: var(--header-height);
+  padding: 0 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.2);
+  display: flex;
+  align-items: center;
+}
+
+.header-inner {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.sidebar-toggle-btn {
+  background: rgba(255, 255, 255, 0.14);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  font-size: 1.15rem;
+  transition: background 0.15s ease;
+}
+
+.sidebar-toggle-btn:hover {
+  background: rgba(255, 255, 255, 0.24);
+}
+
+.brand-title {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-width: 0;
+}
+
+.brand-badge {
+  background: #38bdf8;
+  color: #0f172a;
+  font-weight: 800;
+  font-size: 0.74rem;
+  padding: 0.22rem 0.5rem;
+  border-radius: 6px;
+  letter-spacing: 0.03em;
+  flex-shrink: 0;
+}
+
+.brand-text-wrap {
+  min-width: 0;
+}
+
+.brand-title h1 {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.brand-subtitle {
+  font-size: 0.74rem;
+  color: #cbd5e1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  flex-shrink: 0;
+}
+
+.sync-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.76rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f8fafc;
+  cursor: pointer;
+}
+
+.sync-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #fbbf24;
+  flex-shrink: 0;
+}
+
+.sync-dot.online {
+  background: #4ade80;
+  box-shadow: 0 0 8px #4ade80;
+}
+
+/* ============================================================================
+   APP SHELL: LEFT STICKY/COLLAPSIBLE SIDEBAR + MAIN CONTENT
+   ============================================================================ */
+.app-layout {
+  display: flex;
+  align-items: flex-start;
+  min-height: calc(100vh - var(--header-height));
+  position: relative;
+}
+
+/* Left Sidebar */
+.app-sidebar {
+  width: var(--sidebar-width);
+  flex-shrink: 0;
+  background: #fff;
+  border-right: 1px solid var(--slate-200);
+  position: sticky;
+  top: var(--header-height);
+  height: calc(100vh - var(--header-height));
+  overflow-y: auto;
+  overflow-x: hidden;
+  z-index: 50;
+  transition: width 0.22s cubic-bezier(0.4, 0, 0.2, 1), transform 0.22s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0.85rem 0.7rem;
+}
+
+/* Desktop collapsed state */
+body.sidebar-collapsed .app-sidebar {
+  width: var(--sidebar-collapsed-width);
+  padding: 0.85rem 0.45rem;
+}
+
+body.sidebar-collapsed .app-sidebar .hide-when-collapsed {
+  display: none !important;
+}
+
+body.sidebar-collapsed .app-sidebar .sidebar-nav-btn,
+body.sidebar-collapsed .app-sidebar .sidebar-stage-btn {
+  justify-content: center;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.sidebar-section-label {
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--slate-400);
+  padding: 0.4rem 0.55rem 0.3rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.sidebar-nav-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-nav-btn {
+  width: 100%;
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: 8px;
+  padding: 0.62rem 0.7rem;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--slate-700);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+  transition: all 0.15s ease;
+}
+
+.sidebar-nav-btn:hover {
+  background: var(--slate-100);
+  color: var(--primary);
+}
+
+.sidebar-nav-btn.active {
+  background: var(--primary-light);
+  color: var(--primary);
+  border-color: #bfdbfe;
+  font-weight: 700;
+}
+
+.nav-icon-badge {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  background: var(--slate-100);
+  color: var(--slate-700);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.sidebar-nav-btn.active .nav-icon-badge {
+  background: var(--primary);
+  color: #fff;
+}
+
+/* 4 Giai đoạn eCRF trong Sidebar bên trái */
+.sidebar-stages-box {
+  background: var(--slate-50);
+  border: 1px solid var(--slate-200);
+  border-radius: 10px;
+  padding: 0.55rem;
+  margin-bottom: 0.85rem;
+}
+
+body.sidebar-collapsed .sidebar-stages-box {
+  background: transparent;
+  border: none;
+  padding: 0;
+}
+
+.sidebar-stage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sidebar-stage-btn {
+  width: 100%;
+  border: 1px solid var(--slate-200);
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.55rem 0.65rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: left;
+  transition: all 0.15s ease;
+  position: relative;
+}
+
+.sidebar-stage-btn:hover {
+  border-color: var(--primary);
+  background: #f8fafc;
+}
+
+.sidebar-stage-btn.active {
+  border: 2px solid var(--primary);
+  background: var(--primary-light);
+  box-shadow: 0 2px 6px rgba(30, 64, 175, 0.1);
+}
+
+.stage-index-circle {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--slate-100);
+  color: var(--slate-700);
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid var(--slate-300);
+}
+
+.sidebar-stage-btn.active .stage-index-circle {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+.sidebar-stage-btn.done .stage-index-circle {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.sidebar-stage-btn.active.done .stage-index-circle {
+  background: var(--primary);
+  color: #fff;
+}
+
+.stage-text-col {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  flex: 1;
+}
+
+.stage-title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.stage-name-text {
+  font-size: 0.83rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-sub-text {
+  font-size: 0.71rem;
+  color: var(--slate-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.stage-done-pill {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #15803d;
+  background: #dcfce7;
+  padding: 0.05rem 0.35rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* Bảng điểm lâm sàng cố định trong Sidebar */
+.sidebar-live-scores {
+  background: linear-gradient(135deg, #eff6ff 0%, #f0fdfa 100%);
+  border: 1px solid #bfdbfe;
+  border-radius: 9px;
+  padding: 0.65rem;
+  margin-bottom: 0.75rem;
+}
+
+.sidebar-score-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  margin-top: 0.35rem;
+}
+
+.sidebar-score-item {
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 6px;
+  padding: 0.35rem 0.45rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-score-item span {
+  font-size: 0.66rem;
+  color: var(--slate-600);
+  font-weight: 600;
+}
+
+.sidebar-score-item strong {
+  font-size: 0.92rem;
+  color: var(--primary);
+  font-weight: 800;
+}
+
+.sidebar-footer {
+  border-top: 1px solid var(--slate-200);
+  padding-top: 0.65rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+/* Backdrop cho Sidebar trên điện thoại */
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  top: var(--header-height);
+  background: rgba(15, 23, 42, 0.5);
+  z-index: 45;
+}
+
+/* ============================================================================
+   MAIN WORKSPACE CONTAINER
+   ============================================================================ */
+.main-container {
+  flex: 1;
+  min-width: 0;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1.15rem 1.25rem 4.5rem;
+  width: 100%;
+}
+
+/* Thanh điều hướng giai đoạn nhanh trên Mobile (Sticky dưới Header khi nhập eCRF) */
+.mobile-stage-bar {
+  display: none;
+  position: sticky;
+  top: var(--header-height);
+  z-index: 35;
+  background: #fff;
+  border-bottom: 1px solid var(--slate-200);
+  padding: 0.45rem 0.75rem;
+  margin: -1.15rem -1.25rem 1rem;
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05);
+  overflow-x: auto;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.mobile-stage-chip {
+  border: 1px solid var(--slate-300);
+  background: var(--slate-50);
+  color: var(--slate-700);
+  padding: 0.38rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.mobile-stage-chip.active {
+  background: var(--primary);
+  color: #fff;
+  border-color: var(--primary);
+}
+
+/* Cards */
+.card {
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 10px;
+  padding: 1.15rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  margin-bottom: 1rem;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  margin-bottom: 0.95rem;
+  padding-bottom: 0.65rem;
+  border-bottom: 1px solid var(--slate-100);
+}
+
+.card-title {
+  margin: 0;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--slate-900);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* KPI Grid */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.kpi-card {
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  border-radius: 10px;
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.kpi-label {
+  font-size: 0.73rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: var(--slate-600);
+}
+
+.kpi-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--slate-900);
+  line-height: 1.2;
+}
+
+.kpi-sub {
+  font-size: 0.75rem;
+  color: var(--slate-600);
+}
+
+/* Form Layout */
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.85rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.form-group.col-span-2 {
+  grid-column: span 2;
+}
+
+.form-label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--slate-700);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.25rem;
+}
+
+.auto-badge {
+  font-size: 0.66rem;
+  font-weight: 700;
+  padding: 0.08rem 0.38rem;
+  border-radius: 4px;
+  background: #dbeafe;
+  color: #1e40af;
+  flex-shrink: 0;
+}
+
+.form-control {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid var(--slate-300);
+  border-radius: 7px;
+  font-size: 0.92rem;
+  color: var(--slate-900);
+  background: #fff;
+  min-height: 40px;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(30, 64, 175, 0.12);
+}
+
+.form-control[readonly] {
+  background: var(--slate-100);
+  font-weight: 700;
+  color: var(--primary);
+}
+
+/* Checkbox Cards for Comorbidities */
+.comorb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 0.55rem;
+}
+
+.check-tile {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--slate-200);
+  border-radius: 8px;
+  background: var(--slate-50);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  user-select: none;
+  min-height: 42px;
+}
+
+.check-tile:hover {
+  border-color: var(--primary);
+  background: var(--primary-light);
+}
+
+.check-tile input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary);
+  flex-shrink: 0;
+}
+
+/* Score Strip on top of Form */
+.score-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.65rem;
+  padding: 0.75rem 1rem;
+  border-radius: 9px;
+  background: linear-gradient(90deg, #eff6ff 0%, #f0fdfa 100%);
+  border: 1px solid #bfdbfe;
+  margin-bottom: 1rem;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.score-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.score-pill {
+  padding: 0.3rem 0.65rem;
+  border-radius: 6px;
+  background: #fff;
+  border: 1px solid var(--slate-200);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--slate-800);
+}
+
+.score-pill strong {
+  color: var(--primary);
+  font-size: 0.92rem;
+  margin-left: 0.2rem;
+}
+
+/* Sticky Save Footer Bar for Form */
+.sticky-form-actions {
+  position: sticky;
+  bottom: 0.75rem;
+  z-index: 30;
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--slate-300);
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+  border-radius: 10px;
+  padding: 0.75rem 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  padding: 0.55rem 0.95rem;
+  min-height: 38px;
+  border-radius: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: var(--primary-hover);
+}
+
+.btn-secondary {
+  background: #fff;
+  border-color: var(--slate-300);
+  color: var(--slate-700);
+}
+
+.btn-secondary:hover {
+  background: var(--slate-100);
+}
+
+.btn-success {
+  background: var(--success);
+  color: #fff;
+}
+
+.btn-danger {
+  background: var(--danger-light);
+  color: var(--danger);
+  border-color: #fecaca;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.65rem;
+  min-height: 32px;
+  font-size: 0.78rem;
+}
+
+/* Table (Desktop) & Patient Cards (Mobile) */
+.table-wrap {
+  overflow-x: auto;
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+}
+
+.data-table th {
+  background: var(--slate-100);
+  color: var(--slate-700);
+  text-align: left;
+  padding: 0.65rem 0.75rem;
+  font-weight: 700;
+  border-bottom: 1px solid var(--slate-200);
+  white-space: nowrap;
+}
+
+.data-table td {
+  padding: 0.65rem 0.75rem;
+  border-bottom: 1px solid var(--slate-100);
+  vertical-align: middle;
+}
+
+.data-table tr:hover td {
+  background: var(--slate-50);
+}
+
+/* Mobile Patient List Cards (Ẩn trên Desktop, Hiện trên Điện thoại) */
+.mobile-patient-cards {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.mobile-patient-card {
+  border: 1px solid var(--slate-200);
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
+}
+
+.mobile-card-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.mobile-card-meta {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.4rem;
+  background: var(--slate-50);
+  padding: 0.55rem;
+  border-radius: 7px;
+  font-size: 0.78rem;
+}
+
+.mobile-card-stages {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.35rem;
+}
+
+.mobile-stage-jump {
+  border: 1px solid var(--slate-200);
+  background: var(--slate-50);
+  color: var(--slate-700);
+  border-radius: 6px;
+  padding: 0.42rem 0.25rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+}
+
+.mobile-stage-jump.done {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.mobile-stage-jump.due {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.73rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.status-1 { background: #e0f2fe; color: #0369a1; }
+.status-2 { background: #fef3c7; color: #b45309; }
+.status-3 { background: #ede9fe; color: #6d28d9; }
+.status-4 { background: #dcfce7; color: #15803d; }
+
+/* Stage Progress Dots in Desktop Table */
+.stage-dots {
+  display: inline-flex;
+  gap: 5px;
+  align-items: center;
+}
+
+.stage-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--slate-100);
+  color: var(--slate-600);
+  border: 1px solid var(--slate-200);
+  cursor: pointer;
+}
+
+.stage-dot.done {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #86efac;
+}
+
+.stage-dot.due {
+  background: #fef3c7;
+  color: #b45309;
+  border-color: #fde68a;
+}
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 0.85rem;
+}
+
+.modal-backdrop.open {
+  display: flex;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 12px;
+  max-width: 660px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.2rem;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+}
+
+/* Toast Notification */
+.toast-container {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  left: 1rem;
+  pointer-events: none;
+  z-index: 120;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.toast {
+  pointer-events: auto;
+  background: var(--slate-900);
+  color: #fff;
+  padding: 0.7rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.22);
+  border-left: 4px solid #38bdf8;
+  max-width: 420px;
+}
+
+.alert-banner {
+  padding: 0.75rem 0.95rem;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.alert-warning {
+  background: var(--amber-light);
+  border: 1px solid #fde68a;
+  color: #92400e;
+}
+
+.alert-info {
+  background: var(--primary-light);
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+/* ============================================================================
+   MOBILE & TABLET RESPONSIVE OPTIMIZATION (< 900px and < 640px)
+   ============================================================================ */
+@media (max-width: 900px) {
+  /* Sidebar chuyển thành Off-canvas Drawer trượt từ bên trái */
+  .app-sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    bottom: 0;
+    width: 285px !important;
+    padding: 0.85rem 0.75rem !important;
+    transform: translateX(-105%);
+    box-shadow: 8px 0 24px rgba(15, 23, 42, 0.22);
+  }
+
+  body.mobile-sidebar-open .app-sidebar {
+    transform: translateX(0);
+  }
+
+  body.mobile-sidebar-open .sidebar-backdrop {
+    display: block;
+  }
+
+  /* Luôn hiện đầy đủ chữ trong Drawer trên mobile */
+  body.sidebar-collapsed .app-sidebar .hide-when-collapsed {
+    display: initial !important;
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .mobile-stage-bar {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-header {
+    padding: 0 0.65rem;
+  }
+
+  .brand-subtitle,
+  .hide-on-mobile {
+    display: none !important;
+  }
+
+  .brand-title h1 {
+    font-size: 0.92rem;
+  }
+
+  .main-container {
+    padding: 0.85rem 0.75rem 5.5rem;
+  }
+
+  .mobile-stage-bar {
+    margin: -0.85rem -0.75rem 0.85rem;
+  }
+
+  .card {
+    padding: 0.85rem;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+
+  .form-group.col-span-2 {
+    grid-column: span 1;
+  }
+
+  /* Font 16px trên điện thoại để iOS Safari không bị tự động phóng to khi chạm vào input */
+  .form-control {
+    font-size: 16px;
+    min-height: 44px;
+    padding: 0.6rem 0.75rem;
+  }
+
+  .comorb-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Chuyển bảng sang chế độ Thẻ bệnh nhân (Mobile Cards) trên màn hình điện thoại */
+  .desktop-table-only {
+    display: none !important;
+  }
+
+  .mobile-patient-cards {
+    display: flex;
+  }
+
+  .sticky-form-actions {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    border-radius: 12px 12px 0 0;
+    padding: 0.65rem 0.75rem;
+  }
+
+  .sticky-form-actions .btn {
+    flex: 1;
+    min-height: 42px;
+  }
+}
+
+</style>
 </head>
 <body>
 
@@ -348,7 +1458,2276 @@
   <!-- Toast Container -->
   <div id="toastContainer" class="toast-container"></div>
 
-  <script src="js/schema.js"></script>
-  <script src="js/app.js"></script>
+  <script>
+/**
+ * Bộ biến số chuẩn (CRF Schema) & Công cụ tính toán lâm sàng tự động
+ * Dự án: Nghiên cứu Pilot Can thiệp Triệt đốt Rung nhĩ bằng RF (Bảng dữ liệu duy nhất: "RF")
+ * Protocol cố định: Năng lượng RF • Hệ thống 3D EnSite X • Gây mê toàn thân • Chung 1 Ê-kíp
+ * Cấu trúc: 1 bệnh nhân = 1 dòng tổng hợp (Wide format cho SPSS / R / Stata)
+ */
+
+window.AF_SCHEMA = {
+  sheetName: 'RF',
+  columns: [
+    // 0. ĐỊNH DANH & QUẢN LÝ
+    { key: 'patient_id', label: 'Mã nghiên cứu (Patient ID)', stage: 'meta', spssType: 'string' },
+    { key: 'hospital_id', label: 'Mã bệnh án (MRN)', stage: 'meta', spssType: 'string' },
+    { key: 'full_name', label: 'Họ tên (hoặc viết tắt)', stage: 'meta', spssType: 'string' },
+    { key: 'birth_year', label: 'Năm sinh', stage: 'meta', spssType: 'numeric' },
+    { key: 'age', label: 'Tuổi (năm)', stage: 'meta', spssType: 'numeric' },
+    { key: 'sex', label: 'Giới tính', stage: 'meta', spssMap: { 'Nam': 1, 'Nữ': 0 } },
+    { key: 'phone', label: 'Số điện thoại', stage: 'meta', spssType: 'string' },
+    {
+      key: 'study_status',
+      label: 'Trạng thái hồ sơ',
+      stage: 'meta',
+      spssMap: {
+        '1_NhapVien': 1,
+        '2_DaThuThuat': 2,
+        '3_DaTheoDoi_1T': 3,
+        '4_HoanTat_Tren3T': 4
+      }
+    },
+    { key: 'updated_by', label: 'Người nhập cuối', stage: 'meta', spssType: 'string' },
+    { key: 'updated_at', label: 'Cập nhật lúc', stage: 'meta', spssType: 'string' },
+
+    // 1. NHẬP VIỆN & ĐẶC ĐIỂM NỀN (BASELINE)
+    { key: 'admission_date', label: 'Ngày nhập viện', stage: 'admission', spssType: 'date' },
+    { key: 'height_cm', label: 'Chiều cao (cm)', stage: 'admission', spssType: 'numeric' },
+    { key: 'weight_kg', label: 'Cân nặng (kg)', stage: 'admission', spssType: 'numeric' },
+    { key: 'bmi', label: 'BMI (kg/m2)', stage: 'admission', spssType: 'numeric' },
+    {
+      key: 'af_type',
+      label: 'Phân loại Rung nhĩ',
+      stage: 'admission',
+      spssMap: {
+        'Rung nhĩ kịch phát': 1,
+        'Rung nhĩ dai dẳng (không kịch phát)': 2
+      }
+    },
+    { key: 'af_duration_months', label: 'Thời gian mắc RN (tháng)', stage: 'admission', spssType: 'numeric' },
+    {
+      key: 'ehra_baseline',
+      label: 'Phân độ EHRA nhập viện',
+      stage: 'admission',
+      spssMap: { 'I': 1, 'IIa': 2, 'IIb': 3, 'III': 4, 'IV': 5 }
+    },
+    {
+      key: 'nyha_class',
+      label: 'Phân độ suy tim NYHA',
+      stage: 'admission',
+      spssMap: { 'Không suy tim': 0, 'NYHA I': 1, 'NYHA II': 2, 'NYHA III': 3, 'NYHA IV': 4 }
+    },
+    { key: 'comorb_hf', label: 'Suy tim / LVEF <= 40%', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'comorb_htn', label: 'Tăng huyết áp', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'comorb_dm', label: 'Đái tháo đường', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'comorb_stroke_tia', label: 'Tiền sử Đột quỵ / TIA', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'comorb_vascular', label: 'Bệnh mạch máu (BMV/ĐM ngoại biên)', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'comorb_renal_liver', label: 'Suy thận / Suy gan mạn', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'comorb_bleeding_predisp', label: 'Tiền sử xuất huyết / Thiếu máu', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'comorb_labile_inr_alcohol', label: 'INR dao động / Kháng tiểu cầu / Rượu', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    {
+      key: 'comorb_thyroid',
+      label: 'Bệnh lý tuyến giáp',
+      stage: 'admission',
+      spssMap: { 'Không': 0, 'Cường giáp': 1, 'Suy giáp': 2 }
+    },
+    { key: 'comorb_osa', label: 'Ngưng thở khi ngủ (OSA)', stage: 'admission', spssMap: { '0': 0, '1': 1 } },
+    { key: 'cha2ds2_vasc', label: 'Điểm CHA2DS2-VASc', stage: 'admission', spssType: 'numeric' },
+    { key: 'has_bled', label: 'Điểm HAS-BLED', stage: 'admission', spssType: 'numeric' },
+    { key: 'hr_baseline', label: 'Tần số tim nhập viện (ck/p)', stage: 'admission', spssType: 'numeric' },
+    {
+      key: 'rhythm_admission',
+      label: 'Nhịp ECG nhập viện',
+      stage: 'admission',
+      spssMap: { 'AF (Rung nhĩ)': 1, 'SR (Nhịp xoang)': 0, 'AFL/AT (Cuồng/Nhanh nhĩ)': 2 }
+    },
+    { key: 'echo_lvef', label: 'Siêu âm LVEF (%)', stage: 'admission', spssType: 'numeric' },
+    { key: 'echo_lad', label: 'Đường kính nhĩ trái LAD (mm)', stage: 'admission', spssType: 'numeric' },
+    { key: 'echo_lavi', label: 'Thể tích nhĩ trái LAVI (mL/m2)', stage: 'admission', spssType: 'numeric' },
+    {
+      key: 'tee_msct_thrombus',
+      label: 'Huyết khối tiểu nhĩ trái (TEE/MSCT)',
+      stage: 'admission',
+      spssMap: { 'Không huyết khối': 0, 'Có máu tụ âm tự nhiên (SEC)': 1, 'Có huyết khối': 2 }
+    },
+    { key: 'lab_egfr', label: 'eGFR (mL/phút/1.73m2)', stage: 'admission', spssType: 'numeric' },
+    { key: 'lab_ntprobnp', label: 'NT-proBNP (pg/mL)', stage: 'admission', spssType: 'numeric' },
+    {
+      key: 'pre_oac',
+      label: 'Thuốc chống đông trước thủ thuật',
+      stage: 'admission',
+      spssMap: { 'Rivaroxaban': 1, 'Dabigatran': 2, 'Apixaban': 3, 'Edoxaban': 4, 'Kháng Vitamin K': 5, 'Không dùng': 0 }
+    },
+    {
+      key: 'pre_aad',
+      label: 'Thuốc chống loạn nhịp trước thủ thuật',
+      stage: 'admission',
+      spssMap: { 'Amiodarone': 1, 'Flecainide': 2, 'Propafenone': 3, 'Beta-blocker đơn thuần': 4, 'Sotalol': 5, 'Không dùng': 0 }
+    },
+    { key: 'baseline_note', label: 'Ghi chú lúc nhập viện', stage: 'admission', spssType: 'string' },
+
+    // 2. THỦ THUẬT TRIỆT ĐỐT RF (Protocol cố định: RF + EnSite X + Gây mê toàn thân + 1 Ê-kíp)
+    { key: 'proc_date', label: 'Ngày làm thủ thuật', stage: 'procedure', spssType: 'date' },
+    { key: 'catheter_type', label: 'Loại Catheter RF sử dụng', stage: 'procedure', spssType: 'string' },
+    {
+      key: 'ablation_pvi',
+      label: 'Kết quả cô lập tĩnh mạch phổi (PVI)',
+      stage: 'procedure',
+      spssMap: { 'Thành công cô lập 4 TMP': 1, 'Cô lập một phần': 2, 'Không thực hiện PVI': 0 }
+    },
+    { key: 'ablation_extra_lines', label: 'Đường đốt bổ sung ngoài PVI', stage: 'procedure', spssType: 'string' },
+    {
+      key: 'cardioversion_intra',
+      label: 'Sốc điện chuyển nhịp trong thủ thuật',
+      stage: 'procedure',
+      spssMap: { 'Không': 0, 'Có': 1 }
+    },
+    {
+      key: 'rhythm_end_proc',
+      label: 'Nhịp kết thúc thủ thuật',
+      stage: 'procedure',
+      spssMap: { 'SR (Nhịp xoang)': 0, 'AF (Rung nhĩ)': 1, 'AFL/AT': 2 }
+    },
+    { key: 'proc_time_min', label: 'Tổng thời gian thủ thuật (phút)', stage: 'procedure', spssType: 'numeric' },
+    { key: 'ablation_time_min', label: 'Thời gian phát năng lượng đốt RF (phút)', stage: 'procedure', spssType: 'numeric' },
+    { key: 'fluoro_time_min', label: 'Thời gian chiếu tia (phút)', stage: 'procedure', spssType: 'numeric' },
+    { key: 'fluoro_dose_mgy', label: 'Liều tia X (mGy)', stage: 'procedure', spssType: 'numeric' },
+    {
+      key: 'proc_complication',
+      label: 'Biến chứng quanh thủ thuật',
+      stage: 'procedure',
+      spssMap: {
+        'Không': 0,
+        'Tụ máu / Giả phình mạch đùi': 1,
+        'Tràn dịch / Chèn ép tim cấp': 2,
+        'TIA / Đột quỵ não': 3,
+        'Liệt thần kinh hoành': 4,
+        'Khác': 5
+      }
+    },
+    { key: 'proc_complication_note', label: 'Chi tiết biến chứng & xử trí', stage: 'procedure', spssType: 'string' },
+    { key: 'discharge_date', label: 'Ngày xuất viện', stage: 'procedure', spssType: 'date' },
+    {
+      key: 'discharge_rhythm',
+      label: 'Nhịp lúc xuất viện',
+      stage: 'procedure',
+      spssMap: { 'SR (Nhịp xoang)': 0, 'AF (Rung nhĩ)': 1, 'AFL/AT': 2 }
+    },
+    { key: 'discharge_oac', label: 'Thuốc chống đông xuất viện', stage: 'procedure', spssType: 'string' },
+    { key: 'discharge_aad', label: 'Thuốc chống loạn nhịp xuất viện', stage: 'procedure', spssType: 'string' },
+
+    // 3. THEO DÕI 1 THÁNG (BLANKING PERIOD)
+    { key: 'fu1m_date', label: 'Ngày tái khám 1 tháng', stage: 'fu1m', spssType: 'date' },
+    {
+      key: 'fu1m_status',
+      label: 'Trạng thái tái khám 1 tháng',
+      stage: 'fu1m',
+      spssMap: { 'Đã khám trực tiếp': 1, 'Phỏng vấn qua điện thoại': 2, 'Chưa đến hạn': 0, 'Mất dấu (Lost to FU)': 9 }
+    },
+    {
+      key: 'fu1m_ehra',
+      label: 'Phân độ EHRA 1 tháng',
+      stage: 'fu1m',
+      spssMap: { 'I': 1, 'IIa': 2, 'IIb': 3, 'III': 4, 'IV': 5 }
+    },
+    {
+      key: 'fu1m_ecg_rhythm',
+      label: 'Nhịp ECG / Holter 1 tháng',
+      stage: 'fu1m',
+      spssMap: { 'SR (Nhịp xoang)': 0, 'AF (Rung nhĩ)': 1, 'AFL/AT (Cuồng/Nhanh nhĩ)': 2 }
+    },
+    {
+      key: 'fu1m_early_recurrence',
+      label: 'Tái phát sớm trong Blanking (ERAF)',
+      stage: 'fu1m',
+      spssMap: { '0': 0, '1': 1 }
+    },
+    {
+      key: 'fu1m_early_recurrence_action',
+      label: 'Xử trí tái phát sớm',
+      stage: 'fu1m',
+      spssMap: { 'Không tái phát': 0, 'Theo dõi nội khoa': 1, 'Tăng/Đổi thuốc AAD': 2, 'Sốc điện chuyển nhịp': 3, 'Nhập viện': 4 }
+    },
+    {
+      key: 'fu1m_oac_adherence',
+      label: 'Tuân thủ thuốc chống đông 1 tháng',
+      stage: 'fu1m',
+      spssMap: { 'Uống đều đủ liều': 1, 'Quên liều / Gián đoạn': 2, 'Tự ý ngưng thuốc': 0 }
+    },
+    { key: 'fu1m_aad_current', label: 'Thuốc chống loạn nhịp tại 1 tháng', stage: 'fu1m', spssType: 'string' },
+    { key: 'fu1m_late_complication', label: 'Biến cố muộn sau xuất viện (1 tháng)', stage: 'fu1m', spssType: 'string' },
+    { key: 'fu1m_note', label: 'Ghi chú tái khám 1 tháng', stage: 'fu1m', spssType: 'string' },
+
+    // 4. THEO DÕI NGOÀI 3 THÁNG (KẾT CỤC CHÍNH)
+    { key: 'fu3m_date', label: 'Ngày đánh giá >3 tháng', stage: 'fu3m', spssType: 'date' },
+    {
+      key: 'fu3m_milestone',
+      label: 'Mốc thời gian theo dõi ngoài 3 tháng',
+      stage: 'fu3m',
+      spssMap: { '3 tháng': 3, '6 tháng': 6, '9 tháng': 9, '12 tháng': 12, '>12 tháng': 15 }
+    },
+    { key: 'fu3m_months_from_proc', label: 'Số tháng từ lúc thủ thuật', stage: 'fu3m', spssType: 'numeric' },
+    {
+      key: 'fu3m_ehra',
+      label: 'Phân độ EHRA >3 tháng',
+      stage: 'fu3m',
+      spssMap: { 'I': 1, 'IIa': 2, 'IIb': 3, 'III': 4, 'IV': 5 }
+    },
+    {
+      key: 'fu3m_monitoring_method',
+      label: 'Phương pháp tầm soát loạn nhịp',
+      stage: 'fu3m',
+      spssMap: { 'ECG 12 chuyển đạo': 1, 'Holter ECG 24h': 2, 'Holter ECG 48-72h+': 3, 'Smartwatch / ECG cá nhân': 4 }
+    },
+    {
+      key: 'fu3m_rhythm',
+      label: 'Nhịp ghi nhận >3 tháng',
+      stage: 'fu3m',
+      spssMap: { 'SR (Nhịp xoang)': 0, 'AF (Rung nhĩ)': 1, 'AFL/AT (Cuồng/Nhanh nhĩ)': 2 }
+    },
+    {
+      key: 'fu3m_af_recurrence',
+      label: 'Tái phát loạn nhịp nhĩ >= 30s sau Blanking (Kết cục chính)',
+      stage: 'fu3m',
+      spssMap: { '0': 0, '1': 1 }
+    },
+    { key: 'fu3m_recurrence_date', label: 'Ngày phát hiện tái phát muộn', stage: 'fu3m', spssType: 'date' },
+    { key: 'fu3m_time_to_recurrence_days', label: 'Thời gian đến khi tái phát (ngày)', stage: 'fu3m', spssType: 'numeric' },
+    {
+      key: 'fu3m_aad_status',
+      label: 'Tình trạng dùng thuốc AAD >3 tháng',
+      stage: 'fu3m',
+      spssMap: { 'Đã ngưng thuốc AAD (Off-AAD)': 0, 'Đang duy trì AAD (On-AAD)': 1 }
+    },
+    {
+      key: 'fu3m_oac_status',
+      label: 'Tình trạng dùng chống đông >3 tháng',
+      stage: 'fu3m',
+      spssMap: { 'Đang duy trì OAC': 1, 'Ngưng theo chỉ định (CHA2DS2-VASc thấp)': 0, 'Bệnh nhân tự ngưng': 2 }
+    },
+    { key: 'fu3m_echo_lvef', label: 'Siêu âm LVEF tái khám (%)', stage: 'fu3m', spssType: 'numeric' },
+    { key: 'fu3m_echo_lad', label: 'Đường kính LA tái khám (mm)', stage: 'fu3m', spssType: 'numeric' },
+    { key: 'fu3m_echo_lavi', label: 'Thể tích LAVI tái khám (mL/m2)', stage: 'fu3m', spssType: 'numeric' },
+    {
+      key: 'fu3m_rehospitalization',
+      label: 'Tái nhập viện do nguyên nhân tim mạch',
+      stage: 'fu3m',
+      spssMap: { '0': 0, '1': 1 }
+    },
+    {
+      key: 'fu3m_redo_ablation',
+      label: 'Triệt đốt lại (Redo Ablation)',
+      stage: 'fu3m',
+      spssMap: { '0': 0, '1': 1 }
+    },
+    { key: 'fu3m_major_events', label: 'Biến cố lâm sàng nặng (Đột quỵ/Xuất huyết/Tử vong)', stage: 'fu3m', spssType: 'string' },
+    { key: 'fu3m_note', label: 'Ghi chú theo dõi dài hạn (>3 tháng)', stage: 'fu3m', spssType: 'string' }
+  ],
+
+  /**
+   * Tính toán tự động các chỉ số lâm sàng từ dữ liệu nhập vào
+   */
+  computeDerivedFields(patient) {
+    const p = { ...patient };
+    const currentYear = new Date().getFullYear();
+
+    // Chuẩn hóa giá trị phân loại rung nhĩ cũ (nếu có) sang 2 nhóm chuẩn mới
+    if (p.af_type) {
+      if (p.af_type.includes('Kịch phát') || p.af_type.includes('kịch phát') && !p.af_type.includes('không kịch phát')) {
+        p.af_type = 'Rung nhĩ kịch phát';
+      } else if (p.af_type.includes('Bền bỉ') || p.af_type.includes('dai dẳng')) {
+        p.af_type = 'Rung nhĩ dai dẳng (không kịch phát)';
+      }
+    }
+
+    // 1. Tuổi từ năm sinh
+    const birthYear = parseInt(p.birth_year, 10);
+    if (!isNaN(birthYear) && birthYear > 1900 && birthYear <= currentYear) {
+      p.age = String(currentYear - birthYear);
+    }
+
+    // 2. BMI = weight / (height/100)^2
+    const h = parseFloat(p.height_cm);
+    const w = parseFloat(p.weight_kg);
+    if (!isNaN(h) && !isNaN(w) && h > 50 && w > 15) {
+      const bmiVal = w / Math.pow(h / 100, 2);
+      p.bmi = bmiVal.toFixed(1);
+    }
+
+    // 3. Điểm CHA2DS2-VASc
+    let cha = 0;
+    const ageNum = parseInt(p.age, 10) || 0;
+    if (String(p.comorb_hf) === '1') cha += 1;
+    if (String(p.comorb_htn) === '1') cha += 1;
+    if (ageNum >= 75) cha += 2;
+    else if (ageNum >= 65) cha += 1;
+    if (String(p.comorb_dm) === '1') cha += 1;
+    if (String(p.comorb_stroke_tia) === '1') cha += 2;
+    if (String(p.comorb_vascular) === '1') cha += 1;
+    if (p.sex === 'Nữ') cha += 1;
+    p.cha2ds2_vasc = String(cha);
+
+    // 4. Điểm HAS-BLED
+    let has = 0;
+    if (String(p.comorb_htn) === '1') has += 1;
+    if (String(p.comorb_renal_liver) === '1') has += 1;
+    if (String(p.comorb_stroke_tia) === '1') has += 1;
+    if (String(p.comorb_bleeding_predisp) === '1') has += 1;
+    if (ageNum > 65) has += 1;
+    if (String(p.comorb_labile_inr_alcohol) === '1') has += 1;
+    p.has_bled = String(has);
+
+    // 5. Khoảng thời gian (tháng) từ ngày thủ thuật đến ngày theo dõi >3 tháng
+    if (p.proc_date && p.fu3m_date) {
+      const dProc = new Date(p.proc_date);
+      const dFu3 = new Date(p.fu3m_date);
+      if (!isNaN(dProc.getTime()) && !isNaN(dFu3.getTime()) && dFu3 >= dProc) {
+        const diffDays = Math.round((dFu3 - dProc) / (1000 * 60 * 60 * 24));
+        p.fu3m_months_from_proc = (diffDays / 30.44).toFixed(1);
+      }
+    }
+
+    // 6. Thời gian đến khi tái phát (ngày) phục vụ phân tích sống còn Kaplan-Meier
+    if (p.proc_date && p.fu3m_recurrence_date && String(p.fu3m_af_recurrence) === '1') {
+      const dProc = new Date(p.proc_date);
+      const dRec = new Date(p.fu3m_recurrence_date);
+      if (!isNaN(dProc.getTime()) && !isNaN(dRec.getTime()) && dRec >= dProc) {
+        p.fu3m_time_to_recurrence_days = String(Math.round((dRec - dProc) / (1000 * 60 * 60 * 24)));
+      }
+    } else if (String(p.fu3m_af_recurrence) === '0' && p.proc_date && p.fu3m_date) {
+      const dProc = new Date(p.proc_date);
+      const dFu3 = new Date(p.fu3m_date);
+      if (!isNaN(dProc.getTime()) && !isNaN(dFu3.getTime()) && dFu3 >= dProc) {
+        p.fu3m_time_to_recurrence_days = String(Math.round((dFu3 - dProc) / (1000 * 60 * 60 * 24)));
+      }
+    }
+
+    // 7. Tự động cập nhật trạng thái hồ sơ
+    if (p.fu3m_date && p.fu3m_rhythm) {
+      p.study_status = '4_HoanTat_Tren3T';
+    } else if (p.fu1m_date && p.fu1m_status && p.fu1m_status !== 'Chưa đến hạn') {
+      p.study_status = '3_DaTheoDoi_1T';
+    } else if (p.proc_date && p.ablation_pvi) {
+      p.study_status = '2_DaThuThuat';
+    } else {
+      p.study_status = '1_NhapVien';
+    }
+
+    return p;
+  },
+
+  /**
+   * Dữ liệu mẫu minh họa nghiên cứu Pilot Triệt đốt Rung nhĩ bằng RF (EnSite X, Gây mê toàn thân)
+   */
+  samplePatients: [
+    {
+      patient_id: 'RF-001',
+      hospital_id: 'BA2601045',
+      full_name: 'Nguyễn Văn H.',
+      birth_year: '1968',
+      age: '58',
+      sex: 'Nam',
+      phone: '0912345678',
+      study_status: '4_HoanTat_Tren3T',
+      updated_by: 'BS. Phong',
+      updated_at: '2026-10-20T09:30:00.000Z',
+      admission_date: '2026-04-10',
+      height_cm: '168',
+      weight_kg: '69',
+      bmi: '24.4',
+      af_type: 'Rung nhĩ kịch phát',
+      af_duration_months: '18',
+      ehra_baseline: 'IIb',
+      nyha_class: 'Không suy tim',
+      comorb_hf: '0',
+      comorb_htn: '1',
+      comorb_dm: '0',
+      comorb_stroke_tia: '0',
+      comorb_vascular: '0',
+      comorb_renal_liver: '0',
+      comorb_bleeding_predisp: '0',
+      comorb_labile_inr_alcohol: '0',
+      comorb_thyroid: 'Không',
+      comorb_osa: '0',
+      cha2ds2_vasc: '1',
+      has_bled: '1',
+      hr_baseline: '96',
+      rhythm_admission: 'AF (Rung nhĩ)',
+      echo_lvef: '64',
+      echo_lad: '39',
+      echo_lavi: '33',
+      tee_msct_thrombus: 'Không huyết khối',
+      lab_egfr: '82',
+      lab_ntprobnp: '410',
+      pre_oac: 'Rivaroxaban',
+      pre_aad: 'Amiodarone',
+      baseline_note: 'Cơn rung nhĩ kịch phát tái diễn 2-3 lần/tuần dù đã dùng Amiodarone',
+      proc_date: '2026-04-12',
+      catheter_type: 'TactiCath SE / TactiFlex SE',
+      ablation_pvi: 'Thành công cô lập 4 TMP',
+      ablation_extra_lines: 'Không',
+      cardioversion_intra: 'Không',
+      rhythm_end_proc: 'SR (Nhịp xoang)',
+      proc_time_min: '115',
+      ablation_time_min: '28',
+      fluoro_time_min: '8.5',
+      fluoro_dose_mgy: '42',
+      proc_complication: 'Không',
+      proc_complication_note: '',
+      discharge_date: '2026-04-14',
+      discharge_rhythm: 'SR (Nhịp xoang)',
+      discharge_oac: 'Rivaroxaban 20mg',
+      discharge_aad: 'Amiodarone 200mg (trong 8 tuần)',
+      fu1m_date: '2026-05-12',
+      fu1m_status: 'Đã khám trực tiếp',
+      fu1m_ehra: 'I',
+      fu1m_ecg_rhythm: 'SR (Nhịp xoang)',
+      fu1m_early_recurrence: '0',
+      fu1m_early_recurrence_action: 'Không tái phát',
+      fu1m_oac_adherence: 'Uống đều đủ liều',
+      fu1m_aad_current: 'Amiodarone 200mg',
+      fu1m_late_complication: 'Không',
+      fu1m_note: 'Lâm sàng ổn định, hết hồi hộp trống ngực',
+      fu3m_date: '2026-10-15',
+      fu3m_milestone: '6 tháng',
+      fu3m_months_from_proc: '6.1',
+      fu3m_ehra: 'I',
+      fu3m_monitoring_method: 'Holter ECG 24h',
+      fu3m_rhythm: 'SR (Nhịp xoang)',
+      fu3m_af_recurrence: '0',
+      fu3m_recurrence_date: '',
+      fu3m_time_to_recurrence_days: '186',
+      fu3m_aad_status: 'Đã ngưng thuốc AAD (Off-AAD)',
+      fu3m_oac_status: 'Đang duy trì OAC',
+      fu3m_echo_lvef: '66',
+      fu3m_echo_lad: '36',
+      fu3m_echo_lavi: '29',
+      fu3m_rehospitalization: '0',
+      fu3m_redo_ablation: '0',
+      fu3m_major_events: 'Không',
+      fu3m_note: 'Holter 24h tại mốc 6 tháng hoàn toàn nhịp xoang, đã ngưng AAD từ tháng thứ 3'
+    },
+    {
+      patient_id: 'RF-002',
+      hospital_id: 'BA2601102',
+      full_name: 'Trần Thị M.',
+      birth_year: '1959',
+      age: '67',
+      sex: 'Nữ',
+      phone: '0987654321',
+      study_status: '4_HoanTat_Tren3T',
+      updated_by: 'BS. Minh',
+      updated_at: '2026-10-22T14:15:00.000Z',
+      admission_date: '2026-05-18',
+      height_cm: '156',
+      weight_kg: '61',
+      bmi: '25.1',
+      af_type: 'Rung nhĩ dai dẳng (không kịch phát)',
+      af_duration_months: '14',
+      ehra_baseline: 'III',
+      nyha_class: 'NYHA II',
+      comorb_hf: '1',
+      comorb_htn: '1',
+      comorb_dm: '1',
+      comorb_stroke_tia: '0',
+      comorb_vascular: '0',
+      comorb_renal_liver: '0',
+      comorb_bleeding_predisp: '0',
+      comorb_labile_inr_alcohol: '0',
+      comorb_thyroid: 'Không',
+      comorb_osa: '0',
+      cha2ds2_vasc: '5',
+      has_bled: '2',
+      hr_baseline: '118',
+      rhythm_admission: 'AF (Rung nhĩ)',
+      echo_lvef: '42',
+      echo_lad: '46',
+      echo_lavi: '44',
+      tee_msct_thrombus: 'Có máu tụ âm tự nhiên (SEC)',
+      lab_egfr: '68',
+      lab_ntprobnp: '1450',
+      pre_oac: 'Apixaban',
+      pre_aad: 'Amiodarone',
+      baseline_note: 'Rung nhĩ dai dẳng kèm suy tim phân suất tống máu giảm nhẹ',
+      proc_date: '2026-05-20',
+      catheter_type: 'TactiCath SE',
+      ablation_pvi: 'Thành công cô lập 4 TMP',
+      ablation_extra_lines: 'Posterior Wall Box, CTI (Eo nhĩ phải)',
+      cardioversion_intra: 'Có',
+      rhythm_end_proc: 'SR (Nhịp xoang)',
+      proc_time_min: '150',
+      ablation_time_min: '42',
+      fluoro_time_min: '11.2',
+      fluoro_dose_mgy: '64',
+      proc_complication: 'Tụ máu / Giả phình mạch đùi',
+      proc_complication_note: 'Tụ máu nhẹ vùng bẹn phải, băng ép ổn định không cần can thiệp',
+      discharge_date: '2026-05-24',
+      discharge_rhythm: 'SR (Nhịp xoang)',
+      discharge_oac: 'Apixaban 5mg x 2',
+      discharge_aad: 'Amiodarone 200mg + Bisoprolol 2.5mg',
+      fu1m_date: '2026-06-20',
+      fu1m_status: 'Đã khám trực tiếp',
+      fu1m_ehra: 'IIa',
+      fu1m_ecg_rhythm: 'SR (Nhịp xoang)',
+      fu1m_early_recurrence: '1',
+      fu1m_early_recurrence_action: 'Tăng/Đổi thuốc AAD',
+      fu1m_oac_adherence: 'Uống đều đủ liều',
+      fu1m_aad_current: 'Amiodarone 200mg + Bisoprolol 5mg',
+      fu1m_late_complication: 'Không',
+      fu1m_note: 'Có 1 cơn rung nhĩ ngắn tuần thứ 2 tự hết, duy trì AAD',
+      fu3m_date: '2026-10-05',
+      fu3m_milestone: '3 tháng',
+      fu3m_months_from_proc: '4.5',
+      fu3m_ehra: 'IIb',
+      fu3m_monitoring_method: 'Holter ECG 48-72h+',
+      fu3m_rhythm: 'AF (Rung nhĩ)',
+      fu3m_af_recurrence: '1',
+      fu3m_recurrence_date: '2026-09-28',
+      fu3m_time_to_recurrence_days: '131',
+      fu3m_aad_status: 'Đang duy trì AAD (On-AAD)',
+      fu3m_oac_status: 'Đang duy trì OAC',
+      fu3m_echo_lvef: '51',
+      fu3m_echo_lad: '44',
+      fu3m_echo_lavi: '41',
+      fu3m_rehospitalization: '0',
+      fu3m_redo_ablation: '0',
+      fu3m_major_events: 'Không',
+      fu3m_note: 'Ghi nhận cơn AF kéo dài 4 giờ trên Holter 48h, LVEF cải thiện từ 42% lên 51%'
+    },
+    {
+      patient_id: 'RF-003',
+      hospital_id: 'BA2601290',
+      full_name: 'Lê Hoàng K.',
+      birth_year: '1974',
+      age: '52',
+      sex: 'Nam',
+      phone: '0905112233',
+      study_status: '3_DaTheoDoi_1T',
+      updated_by: 'BS. Phong',
+      updated_at: '2026-10-25T10:00:00.000Z',
+      admission_date: '2026-09-12',
+      height_cm: '172',
+      weight_kg: '75',
+      bmi: '25.4',
+      af_type: 'Rung nhĩ kịch phát',
+      af_duration_months: '9',
+      ehra_baseline: 'IIb',
+      nyha_class: 'Không suy tim',
+      comorb_hf: '0',
+      comorb_htn: '0',
+      comorb_dm: '0',
+      comorb_stroke_tia: '0',
+      comorb_vascular: '0',
+      comorb_renal_liver: '0',
+      comorb_bleeding_predisp: '0',
+      comorb_labile_inr_alcohol: '0',
+      comorb_thyroid: 'Không',
+      comorb_osa: '1',
+      cha2ds2_vasc: '0',
+      has_bled: '0',
+      hr_baseline: '88',
+      rhythm_admission: 'SR (Nhịp xoang)',
+      echo_lvef: '65',
+      echo_lad: '37',
+      echo_lavi: '31',
+      tee_msct_thrombus: 'Không huyết khối',
+      lab_egfr: '94',
+      lab_ntprobnp: '185',
+      pre_oac: 'Dabigatran',
+      pre_aad: 'Flecainide',
+      baseline_note: 'Bệnh nhân trẻ, rung nhĩ kịch phát kháng Flecainide',
+      proc_date: '2026-09-14',
+      catheter_type: 'TactiFlex SE',
+      ablation_pvi: 'Thành công cô lập 4 TMP',
+      ablation_extra_lines: 'Không',
+      cardioversion_intra: 'Không',
+      rhythm_end_proc: 'SR (Nhịp xoang)',
+      proc_time_min: '95',
+      ablation_time_min: '24',
+      fluoro_time_min: '7.5',
+      fluoro_dose_mgy: '36',
+      proc_complication: 'Không',
+      proc_complication_note: '',
+      discharge_date: '2026-09-16',
+      discharge_rhythm: 'SR (Nhịp xoang)',
+      discharge_oac: 'Dabigatran 150mg x 2',
+      discharge_aad: 'Flecainide 100mg',
+      fu1m_date: '2026-10-15',
+      fu1m_status: 'Đã khám trực tiếp',
+      fu1m_ehra: 'I',
+      fu1m_ecg_rhythm: 'SR (Nhịp xoang)',
+      fu1m_early_recurrence: '0',
+      fu1m_early_recurrence_action: 'Không tái phát',
+      fu1m_oac_adherence: 'Uống đều đủ liều',
+      fu1m_aad_current: 'Flecainide 100mg',
+      fu1m_late_complication: 'Không',
+      fu1m_note: 'Đang chờ lịch hẹn mốc 3 tháng (14/12/2026)',
+      fu3m_date: '',
+      fu3m_milestone: '',
+      fu3m_months_from_proc: '',
+      fu3m_ehra: '',
+      fu3m_monitoring_method: '',
+      fu3m_rhythm: '',
+      fu3m_af_recurrence: '',
+      fu3m_recurrence_date: '',
+      fu3m_time_to_recurrence_days: '',
+      fu3m_aad_status: '',
+      fu3m_oac_status: '',
+      fu3m_echo_lvef: '',
+      fu3m_echo_lad: '',
+      fu3m_echo_lavi: '',
+      fu3m_rehospitalization: '',
+      fu3m_redo_ablation: '',
+      fu3m_major_events: '',
+      fu3m_note: ''
+    },
+    {
+      patient_id: 'RF-004',
+      hospital_id: 'BA2601355',
+      full_name: 'Phạm Văn Đ.',
+      birth_year: '1963',
+      age: '63',
+      sex: 'Nam',
+      phone: '0933445566',
+      study_status: '2_DaThuThuat',
+      updated_by: 'BS. Lan',
+      updated_at: '2026-10-26T16:40:00.000Z',
+      admission_date: '2026-09-24',
+      height_cm: '165',
+      weight_kg: '68',
+      bmi: '25.0',
+      af_type: 'Rung nhĩ dai dẳng (không kịch phát)',
+      af_duration_months: '8',
+      ehra_baseline: 'III',
+      nyha_class: 'NYHA I',
+      comorb_hf: '0',
+      comorb_htn: '1',
+      comorb_dm: '1',
+      comorb_stroke_tia: '0',
+      comorb_vascular: '1',
+      comorb_renal_liver: '0',
+      comorb_bleeding_predisp: '0',
+      comorb_labile_inr_alcohol: '0',
+      comorb_thyroid: 'Không',
+      comorb_osa: '0',
+      cha2ds2_vasc: '3',
+      has_bled: '1',
+      hr_baseline: '104',
+      rhythm_admission: 'AF (Rung nhĩ)',
+      echo_lvef: '58',
+      echo_lad: '42',
+      echo_lavi: '38',
+      tee_msct_thrombus: 'Không huyết khối',
+      lab_egfr: '76',
+      lab_ntprobnp: '680',
+      pre_oac: 'Rivaroxaban',
+      pre_aad: 'Amiodarone',
+      baseline_note: 'Đã đặt stent ĐMV nhánh LAD cách 2 năm',
+      proc_date: '2026-09-25',
+      catheter_type: 'TactiCath SE',
+      ablation_pvi: 'Thành công cô lập 4 TMP',
+      ablation_extra_lines: 'Posterior Wall Box',
+      cardioversion_intra: 'Có',
+      rhythm_end_proc: 'SR (Nhịp xoang)',
+      proc_time_min: '125',
+      ablation_time_min: '34',
+      fluoro_time_min: '9.5',
+      fluoro_dose_mgy: '38',
+      proc_complication: 'Không',
+      proc_complication_note: '',
+      discharge_date: '2026-09-27',
+      discharge_rhythm: 'SR (Nhịp xoang)',
+      discharge_oac: 'Rivaroxaban 20mg',
+      discharge_aad: 'Amiodarone 200mg',
+      fu1m_date: '',
+      fu1m_status: 'Chưa đến hạn',
+      fu1m_ehra: '',
+      fu1m_ecg_rhythm: '',
+      fu1m_early_recurrence: '',
+      fu1m_early_recurrence_action: '',
+      fu1m_oac_adherence: '',
+      fu1m_aad_current: '',
+      fu1m_late_complication: '',
+      fu1m_note: '',
+      fu3m_date: '',
+      fu3m_milestone: '',
+      fu3m_months_from_proc: '',
+      fu3m_ehra: '',
+      fu3m_monitoring_method: '',
+      fu3m_rhythm: '',
+      fu3m_af_recurrence: '',
+      fu3m_recurrence_date: '',
+      fu3m_time_to_recurrence_days: '',
+      fu3m_aad_status: '',
+      fu3m_oac_status: '',
+      fu3m_echo_lvef: '',
+      fu3m_echo_lad: '',
+      fu3m_echo_lavi: '',
+      fu3m_rehospitalization: '',
+      fu3m_redo_ablation: '',
+      fu3m_major_events: '',
+      fu3m_note: ''
+    }
+  ]
+};
+
+
+/**
+ * Logic điều khiển ứng dụng eCRF - Nghiên cứu Pilot Triệt đốt Rung nhĩ bằng RF
+ * Bảng dữ liệu duy nhất: "RF"
+ * Protocol cố định: Năng lượng RF • Hệ thống 3D EnSite X • Gây mê toàn thân • Chung 1 Ê-kíp
+ * Giao diện: Menu trái cố định khi cuộn (Sticky Left Sidebar), đóng/mở được + Tối ưu cho Điện thoại
+ */
+
+(function () {
+  const STORAGE_KEY_PATIENTS = 'af_pilot_patients_rf_v2';
+  const STORAGE_KEY_CONFIG = 'af_pilot_config_v1';
+  const STORAGE_KEY_SIDEBAR = 'af_pilot_sidebar_collapsed_v1';
+
+  const state = {
+    activeMainTab: 'list', // 'list' | 'form' | 'stats'
+    activeFormStage: 'admission', // 'admission' | 'procedure' | 'fu1m' | 'fu3m'
+    patients: [],
+    currentPatient: {},
+    isEditingExisting: false,
+    searchQuery: '',
+    statusFilter: 'ALL',
+    afTypeFilter: 'ALL',
+    config: {
+      gasUrl: '',
+      pin: '',
+      researcherName: 'BS. Nghiên cứu viên'
+    },
+    syncing: false
+  };
+
+  function init() {
+    loadConfig();
+    restoreSidebarState();
+    checkUrlShareParams();
+    loadPatientsFromLocal();
+    // Khởi tạo sẵn currentPatient bằng bệnh nhân đầu tiên (hoặc rỗng) để menu trái luôn có dữ liệu khi bấm thẳng vào Giai đoạn 1..4
+    if (state.patients.length > 0) {
+      state.isEditingExisting = true;
+      state.currentPatient = window.AF_SCHEMA.computeDerivedFields(JSON.parse(JSON.stringify(state.patients[0])));
+    } else {
+      state.currentPatient = createEmptyPatient();
+    }
+    bindNavigationEvents();
+    renderAll();
+
+    if (state.config.gasUrl) {
+      fetchFromGoogleSheet(true);
+    }
+  }
+
+  function restoreSidebarState() {
+    try {
+      const isCollapsed = localStorage.getItem(STORAGE_KEY_SIDEBAR) === '1';
+      if (isCollapsed && window.innerWidth > 900) {
+        document.body.classList.add('sidebar-collapsed');
+      }
+      updateSidebarCollapseIcon();
+    } catch (e) {
+      // ignore
+    }
+  }
+
+  function toggleSidebar() {
+    if (window.innerWidth <= 900) {
+      document.body.classList.toggle('mobile-sidebar-open');
+    } else {
+      const collapsed = document.body.classList.toggle('sidebar-collapsed');
+      try {
+        localStorage.setItem(STORAGE_KEY_SIDEBAR, collapsed ? '1' : '0');
+      } catch (e) {
+        // ignore
+      }
+      updateSidebarCollapseIcon();
+    }
+  }
+
+  function closeMobileSidebar() {
+    document.body.classList.remove('mobile-sidebar-open');
+  }
+
+  function updateSidebarCollapseIcon() {
+    const expandIcon = document.getElementById('expandIconLabel');
+    if (expandIcon) {
+      expandIcon.style.display = document.body.classList.contains('sidebar-collapsed') ? 'inline' : 'none';
+    }
+  }
+
+  function loadConfig() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_CONFIG);
+      if (saved) {
+        state.config = { ...state.config, ...JSON.parse(saved) };
+      }
+    } catch (e) {
+      console.error('Không thể đọc cấu hình:', e);
+    }
+  }
+
+  function saveConfig() {
+    localStorage.setItem(STORAGE_KEY_CONFIG, JSON.stringify(state.config));
+    updateSyncStatusUI();
+  }
+
+  function checkUrlShareParams() {
+    const params = new URLSearchParams(window.location.search);
+    const sharedGasUrl = params.get('gasUrl');
+    const sharedPin = params.get('pin');
+    if (sharedGasUrl && sharedGasUrl.startsWith('https://script.google.com/')) {
+      state.config.gasUrl = sharedGasUrl.trim();
+      if (sharedPin !== null) {
+        state.config.pin = sharedPin.trim();
+      }
+      saveConfig();
+      showToast('Đã tự động kết nối bảng RF trên Google Sheet từ đường link chia sẻ nhóm!');
+      window.history.replaceState({}, document.title, window.location.pathname);
+    }
+  }
+
+  function loadPatientsFromLocal() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY_PATIENTS);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          state.patients = parsed.map(p => window.AF_SCHEMA.computeDerivedFields(p));
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Lỗi đọc dữ liệu local:', e);
+    }
+    state.patients = JSON.parse(JSON.stringify(window.AF_SCHEMA.samplePatients));
+    savePatientsToLocal();
+  }
+
+  function savePatientsToLocal() {
+    localStorage.setItem(STORAGE_KEY_PATIENTS, JSON.stringify(state.patients));
+  }
+
+  function createEmptyPatient() {
+    const nextNum = state.patients.length + 1;
+    const suggestedId = 'RF-' + String(nextNum).padStart(3, '0');
+    const today = new Date().toISOString().slice(0, 10);
+
+    const empty = {};
+    window.AF_SCHEMA.columns.forEach(c => {
+      empty[c.key] = '';
+    });
+
+    empty.patient_id = suggestedId;
+    empty.sex = 'Nam';
+    empty.study_status = '1_NhapVien';
+    empty.admission_date = today;
+    empty.af_type = 'Rung nhĩ kịch phát';
+    empty.ehra_baseline = 'IIb';
+    empty.nyha_class = 'Không suy tim';
+    empty.comorb_hf = '0';
+    empty.comorb_htn = '0';
+    empty.comorb_dm = '0';
+    empty.comorb_stroke_tia = '0';
+    empty.comorb_vascular = '0';
+    empty.comorb_renal_liver = '0';
+    empty.comorb_bleeding_predisp = '0';
+    empty.comorb_labile_inr_alcohol = '0';
+    empty.comorb_thyroid = 'Không';
+    empty.comorb_osa = '0';
+    empty.rhythm_admission = 'AF (Rung nhĩ)';
+    empty.tee_msct_thrombus = 'Không huyết khối';
+    empty.pre_oac = 'Rivaroxaban';
+    empty.pre_aad = 'Amiodarone';
+    empty.catheter_type = 'TactiCath SE';
+    empty.ablation_pvi = 'Thành công cô lập 4 TMP';
+    empty.cardioversion_intra = 'Không';
+    empty.rhythm_end_proc = 'SR (Nhịp xoang)';
+    empty.proc_complication = 'Không';
+    empty.discharge_rhythm = 'SR (Nhịp xoang)';
+    empty.fu1m_status = 'Chưa đến hạn';
+    empty.updated_by = state.config.researcherName || 'BS. Nghiên cứu viên';
+
+    return window.AF_SCHEMA.computeDerivedFields(empty);
+  }
+
+  function bindNavigationEvents() {
+    // Nút điều hướng 3 phân hệ chính ở Sidebar bên trái
+    document.querySelectorAll('[data-main-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const tab = btn.getAttribute('data-main-tab');
+        if (state.activeMainTab === 'form') {
+          collectFormValuesIntoState();
+        }
+        if (tab === 'form' && !state.currentPatient.patient_id) {
+          startNewPatient();
+        } else {
+          switchMainTab(tab);
+        }
+        closeMobileSidebar();
+      });
+    });
+
+    // Nút chuyển 4 giai đoạn ở Sidebar bên trái & Thanh nhanh trên Mobile
+    document.querySelectorAll('[data-stage-tab]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (state.activeMainTab === 'form') {
+          collectFormValuesIntoState();
+        }
+        if (!state.currentPatient.patient_id) {
+          state.currentPatient = createEmptyPatient();
+        }
+        state.activeFormStage = btn.getAttribute('data-stage-tab');
+        if (state.activeMainTab !== 'form') {
+          switchMainTab('form');
+        } else {
+          renderFormStage();
+        }
+        closeMobileSidebar();
+        // Cuộn mượt đến vùng nhập liệu khi chuyển giai đoạn
+        const formPanel = document.getElementById('panel-form');
+        if (formPanel) {
+          const rect = formPanel.getBoundingClientRect();
+          if (rect.top < 0 || rect.top > 180) {
+            window.scrollTo({ top: Math.max(0, window.scrollY + rect.top - 72), behavior: 'smooth' });
+          }
+        }
+      });
+    });
+
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+      searchInput.addEventListener('input', e => {
+        state.searchQuery = e.target.value.trim().toLowerCase();
+        renderPatientList();
+      });
+    }
+
+    const statusFilter = document.getElementById('statusFilter');
+    if (statusFilter) {
+      statusFilter.addEventListener('change', e => {
+        state.statusFilter = e.target.value;
+        renderPatientList();
+      });
+    }
+
+    const afTypeFilter = document.getElementById('afTypeFilter');
+    if (afTypeFilter) {
+      afTypeFilter.addEventListener('change', e => {
+        state.afTypeFilter = e.target.value;
+        renderPatientList();
+      });
+    }
+  }
+
+  function switchMainTab(tabName) {
+    state.activeMainTab = tabName;
+    document.querySelectorAll('[data-main-tab]').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-main-tab') === tabName);
+    });
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+      panel.style.display = panel.id === 'panel-' + tabName ? 'block' : 'none';
+    });
+
+    if (tabName === 'list') renderPatientList();
+    if (tabName === 'form') renderFormStage();
+    if (tabName === 'stats') renderStatistics();
+  }
+
+  function startNewPatient() {
+    if (state.activeMainTab === 'form') {
+      collectFormValuesIntoState();
+    }
+    state.isEditingExisting = false;
+    state.currentPatient = createEmptyPatient();
+    state.activeFormStage = 'admission';
+    switchMainTab('form');
+    closeMobileSidebar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function openPatientForEdit(patientId, initialStage) {
+    const found = state.patients.find(p => p.patient_id === patientId);
+    if (!found) return;
+    state.isEditingExisting = true;
+    state.currentPatient = window.AF_SCHEMA.computeDerivedFields(JSON.parse(JSON.stringify(found)));
+    state.activeFormStage = initialStage || 'admission';
+    switchMainTab('form');
+    closeMobileSidebar();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function renderAll() {
+    updateSyncStatusUI();
+    renderKPIs();
+    renderFollowUpAlerts();
+    renderPatientList();
+    updateScoreStripUI();
+    if (state.activeMainTab === 'form') renderFormStage();
+    if (state.activeMainTab === 'stats') renderStatistics();
+  }
+
+  function updateSyncStatusUI() {
+    const dot = document.getElementById('syncDot');
+    const text = document.getElementById('syncStatusText');
+    const researcherBadge = document.getElementById('researcherBadge');
+
+    if (researcherBadge) {
+      researcherBadge.textContent = state.config.researcherName || 'BS. Nghiên cứu viên';
+    }
+
+    if (!dot || !text) return;
+    if (state.config.gasUrl) {
+      dot.classList.add('online');
+      text.textContent = state.syncing ? 'Đang đồng bộ RF...' : 'Sheet: RF (Online)';
+    } else {
+      dot.classList.remove('online');
+      text.textContent = 'Bảng RF (Local)';
+    }
+  }
+
+  function getFollowUpStatus(p) {
+    if (!p.proc_date) return { due1M: false, due3M: false, daysSinceProc: null };
+    const procDate = new Date(p.proc_date);
+    if (isNaN(procDate.getTime())) return { due1M: false, due3M: false, daysSinceProc: null };
+
+    const now = new Date();
+    const days = Math.floor((now - procDate) / (1000 * 60 * 60 * 24));
+    const has1M = Boolean(p.fu1m_date && p.fu1m_status && p.fu1m_status !== 'Chưa đến hạn');
+    const has3M = Boolean(p.fu3m_date && p.fu3m_rhythm);
+
+    const due1M = !has1M && days >= 25;
+    const due3M = !has3M && days >= 85;
+    return { due1M, due3M, daysSinceProc: days, has1M, has3M };
+  }
+
+  function renderKPIs() {
+    const total = state.patients.length;
+    const procDone = state.patients.filter(p => Boolean(p.proc_date)).length;
+    const pviSuccess = state.patients.filter(p => p.ablation_pvi === 'Thành công cô lập 4 TMP').length;
+    const fu1mDone = state.patients.filter(p => p.fu1m_date && p.fu1m_status && p.fu1m_status !== 'Chưa đến hạn').length;
+    const fu3mDone = state.patients.filter(p => p.fu3m_date && p.fu3m_rhythm).length;
+    const sinusAt3M = state.patients.filter(p => p.fu3m_date && String(p.fu3m_af_recurrence) === '0').length;
+
+    const kpiContainer = document.getElementById('kpiGrid');
+    if (!kpiContainer) return;
+
+    const pviRate = procDone > 0 ? Math.round((pviSuccess / procDone) * 100) : 0;
+    const freeRate = fu3mDone > 0 ? Math.round((sinusAt3M / fu3mDone) * 100) : 0;
+
+    kpiContainer.innerHTML = `
+      <div class="kpi-card">
+        <span class="kpi-label">Bảng RF (Tổng số ca)</span>
+        <span class="kpi-value">${total} <small style="font-size:0.85rem;font-weight:600;color:#64748b">BN</small></span>
+        <span class="kpi-sub">Đã đốt RF: <strong>${procDone}/${total}</strong></span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Cô lập 4 TMP (PVI)</span>
+        <span class="kpi-value" style="color:#0f766e">${pviRate}%</span>
+        <span class="kpi-sub">${pviSuccess}/${procDone || 0} ca thành công cấp</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Theo dõi 1 tháng</span>
+        <span class="kpi-value" style="color:#1e40af">${fu1mDone}/${procDone || 0}</span>
+        <span class="kpi-sub">Hoàn tất đánh giá 1T</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-label">Không tái phát &gt;3T</span>
+        <span class="kpi-value" style="color:#15803d">${freeRate}%</span>
+        <span class="kpi-sub">${sinusAt3M}/${fu3mDone || 0} ca nhịp xoang</span>
+      </div>
+    `;
+  }
+
+  function renderFollowUpAlerts() {
+    const alertBox = document.getElementById('followUpAlertContainer');
+    if (!alertBox) return;
+
+    const dueList = [];
+    state.patients.forEach(p => {
+      const st = getFollowUpStatus(p);
+      if (st.due1M) {
+        dueList.push({ patient: p, stage: 'fu1m', label: `Đến hạn khám 1 tháng (${st.daysSinceProc} ngày sau đốt)` });
+      } else if (st.due3M) {
+        dueList.push({ patient: p, stage: 'fu3m', label: `Đến hạn khám >3 tháng (${st.daysSinceProc} ngày sau đốt)` });
+      }
+    });
+
+    if (dueList.length === 0) {
+      alertBox.innerHTML = '';
+      return;
+    }
+
+    const itemsHtml = dueList.map(item => `
+      <button class="btn btn-sm btn-secondary" onclick="window.AF_APP.openPatient('${item.patient.patient_id}', '${item.stage}')">
+        <strong>${item.patient.patient_id}</strong> (${item.patient.full_name}) - ${item.label}
+      </button>
+    `).join(' ');
+
+    alertBox.innerHTML = `
+      <div class="alert-banner alert-warning">
+        <div>
+          <strong>Nhắc lịch tái khám (${dueList.length} bệnh nhân):</strong>
+          Có bệnh nhân đã đến mốc theo dõi 1 tháng hoặc &gt;3 tháng cần cập nhật kết quả ECG/Holter.
+        </div>
+        <div style="display:flex;gap:0.4rem;flex-wrap:wrap">${itemsHtml}</div>
+      </div>
+    `;
+  }
+
+  function getStatusLabel(statusKey) {
+    const map = {
+      '1_NhapVien': { text: '1. Nhập viện', cls: 'status-1' },
+      '2_DaThuThuat': { text: '2. Đã đốt RF', cls: 'status-2' },
+      '3_DaTheoDoi_1T': { text: '3. Đã khám 1 tháng', cls: 'status-3' },
+      '4_HoanTat_Tren3T': { text: '4. Đã khám >3 tháng', cls: 'status-4' }
+    };
+    return map[statusKey] || { text: statusKey || '1. Nhập viện', cls: 'status-1' };
+  }
+
+  function renderPatientList() {
+    const tbody = document.getElementById('patientTableBody');
+    const mobileCards = document.getElementById('mobilePatientCards');
+    if (!tbody) return;
+
+    const filtered = state.patients.filter(p => {
+      if (state.statusFilter !== 'ALL' && p.study_status !== state.statusFilter) return false;
+      if (state.afTypeFilter !== 'ALL' && p.af_type !== state.afTypeFilter) return false;
+      if (state.searchQuery) {
+        const hay = `${p.patient_id} ${p.hospital_id} ${p.full_name} ${p.phone} ${p.af_type}`.toLowerCase();
+        if (!hay.includes(state.searchQuery)) return false;
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="9" style="text-align:center;padding:2rem;color:#64748b">
+            Không tìm thấy hồ sơ bệnh nhân phù hợp bộ lọc trong bảng dữ liệu RF.
+          </td>
+        </tr>
+      `;
+      if (mobileCards) {
+        mobileCards.innerHTML = `
+          <div style="text-align:center;padding:1.5rem;color:#64748b;background:#f8fafc;border-radius:8px">
+            Không tìm thấy hồ sơ bệnh nhân phù hợp bộ lọc.
+          </div>
+        `;
+      }
+      return;
+    }
+
+    // 1. Render bảng cho Máy tính / Tablet
+    tbody.innerHTML = filtered.map(p => {
+      const st = getStatusLabel(p.study_status);
+      const fu = getFollowUpStatus(p);
+
+      const hasAdm = Boolean(p.admission_date);
+      const hasProc = Boolean(p.proc_date);
+
+      return `
+        <tr>
+          <td>
+            <strong style="color:#1e40af;cursor:pointer" onclick="window.AF_APP.openPatient('${p.patient_id}', 'admission')">${p.patient_id}</strong>
+            <div style="font-size:0.75rem;color:#64748b">${p.hospital_id || 'Chưa có mã BA'}</div>
+          </td>
+          <td>
+            <div style="font-weight:600">${p.full_name || '---'}</div>
+            <div style="font-size:0.76rem;color:#64748b">${p.sex || ''}, ${p.age ? p.age + ' tuổi' : ''} ${p.phone ? '• ' + p.phone : ''}</div>
+          </td>
+          <td>
+            <div style="font-weight:600">${p.af_type || '---'}</div>
+            <div style="font-size:0.75rem;color:#64748b">
+              CHA₂DS₂-VASc: <strong>${p.cha2ds2_vasc ?? '-'}</strong> | LAVI: <strong>${p.echo_lavi ? p.echo_lavi + ' mL/m²' : '-'}</strong>
+            </div>
+          </td>
+          <td>
+            <div>${p.proc_date ? `<strong>${p.proc_date}</strong>` : '<span style="color:#94a3b8">Chưa làm</span>'}</div>
+            <div style="font-size:0.75rem;color:#64748b">${p.ablation_pvi || ''} ${p.ablation_extra_lines && p.ablation_extra_lines !== 'Không' ? '• +' + p.ablation_extra_lines : ''}</div>
+          </td>
+          <td>
+            <div class="stage-dots" title="Nhấn vào từng giai đoạn để nhập nhanh">
+              <span class="stage-dot ${hasAdm ? 'done' : ''}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'admission')" title="1. Nhập viện">NV</span>
+              <span class="stage-dot ${hasProc ? 'done' : ''}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'procedure')" title="2. Thủ thuật RF">TT</span>
+              <span class="stage-dot ${fu.has1M ? 'done' : (fu.due1M ? 'due' : '')}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'fu1m')" title="3. Theo dõi 1 tháng">1T</span>
+              <span class="stage-dot ${fu.has3M ? 'done' : (fu.due3M ? 'due' : '')}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'fu3m')" title="4. Theo dõi >3 tháng">&gt;3T</span>
+            </div>
+          </td>
+          <td>
+            ${fu.has1M
+              ? `<span style="font-size:0.8rem">${p.fu1m_ecg_rhythm || ''}</span><div style="font-size:0.72rem;color:#64748b">ERAF: ${String(p.fu1m_early_recurrence) === '1' ? '<b style="color:#b91c1c">Có</b>' : 'Không'}</div>`
+              : (fu.due1M ? '<span class="status-badge status-2">Đến hạn 1T</span>' : '<span style="color:#94a3b8;font-size:0.78rem">Chưa khám</span>')}
+          </td>
+          <td>
+            ${fu.has3M
+              ? `<span style="font-size:0.8rem;font-weight:600;color:${String(p.fu3m_af_recurrence) === '1' ? '#b91c1c' : '#15803d'}">
+                  ${String(p.fu3m_af_recurrence) === '1' ? 'Tái phát AF' : 'Duy trì Xoang'}
+                 </span>
+                 <div style="font-size:0.72rem;color:#64748b">${p.fu3m_milestone || ''} (${p.fu3m_monitoring_method || ''})</div>`
+              : (fu.due3M ? '<span class="status-badge status-2">Đến hạn >3T</span>' : '<span style="color:#94a3b8;font-size:0.78rem">Chưa khám</span>')}
+          </td>
+          <td>
+            <span class="status-badge ${st.cls}">${st.text}</span>
+            <div style="font-size:0.7rem;color:#64748b;margin-top:2px">${p.updated_by || ''}</div>
+          </td>
+          <td>
+            <div style="display:flex;gap:0.35rem">
+              <button class="btn btn-sm btn-secondary" onclick="window.AF_APP.openPatient('${p.patient_id}', 'admission')">Sửa / Nhập tiếp</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // 2. Render Thẻ bệnh nhân tối ưu cho Điện thoại (< 640px)
+    if (mobileCards) {
+      mobileCards.innerHTML = filtered.map(p => {
+        const st = getStatusLabel(p.study_status);
+        const fu = getFollowUpStatus(p);
+        const hasAdm = Boolean(p.admission_date);
+        const hasProc = Boolean(p.proc_date);
+
+        return `
+          <div class="mobile-patient-card">
+            <div class="mobile-card-top">
+              <div>
+                <div style="display:flex;align-items:center;gap:0.4rem">
+                  <strong style="font-size:0.98rem;color:#1e40af">${p.patient_id}</strong>
+                  <span style="font-weight:700;font-size:0.95rem;color:#0f172a">${p.full_name || '---'}</span>
+                </div>
+                <div style="font-size:0.76rem;color:#64748b">
+                  ${p.sex || ''}, ${p.age ? p.age + ' tuổi' : ''} ${p.hospital_id ? '• BA: ' + p.hospital_id : ''}
+                </div>
+              </div>
+              <span class="status-badge ${st.cls}">${st.text}</span>
+            </div>
+
+            <div class="mobile-card-meta">
+              <div><strong>Phân loại:</strong> ${p.af_type || '-'}</div>
+              <div><strong>CHA₂DS₂-VASc:</strong> ${p.cha2ds2_vasc ?? '-'} | <strong>LAVI:</strong> ${p.echo_lavi || '-'}</div>
+              <div><strong>Ngày đốt RF:</strong> ${p.proc_date || 'Chưa làm'}</div>
+              <div><strong>Kết cục &gt;3T:</strong> ${fu.has3M ? (String(p.fu3m_af_recurrence) === '1' ? '<span style="color:#b91c1c;font-weight:700">Tái phát</span>' : '<span style="color:#15803d;font-weight:700">Nhịp xoang</span>') : 'Chưa khám'}</div>
+            </div>
+
+            <div style="font-size:0.73rem;color:#475569;font-weight:600">Chạm vào từng giai đoạn để mở nhanh:</div>
+            <div class="mobile-card-stages">
+              <button type="button" class="mobile-stage-jump ${hasAdm ? 'done' : ''}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'admission')">
+                1. Nhập viện
+              </button>
+              <button type="button" class="mobile-stage-jump ${hasProc ? 'done' : ''}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'procedure')">
+                2. Đốt RF
+              </button>
+              <button type="button" class="mobile-stage-jump ${fu.has1M ? 'done' : (fu.due1M ? 'due' : '')}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'fu1m')">
+                3. Khám 1T
+              </button>
+              <button type="button" class="mobile-stage-jump ${fu.has3M ? 'done' : (fu.due3M ? 'due' : '')}" onclick="window.AF_APP.openPatient('${p.patient_id}', 'fu3m')">
+                4. Khám &gt;3T
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+  }
+
+  function collectFormValuesIntoState() {
+    const formEl = document.getElementById('crfFormContainer');
+    if (!formEl) return;
+
+    formEl.querySelectorAll('[data-field]').forEach(el => {
+      const key = el.getAttribute('data-field');
+      if (el.type === 'checkbox') {
+        state.currentPatient[key] = el.checked ? '1' : '0';
+      } else {
+        state.currentPatient[key] = el.value;
+      }
+    });
+
+    state.currentPatient = window.AF_SCHEMA.computeDerivedFields(state.currentPatient);
+    updateScoreStripUI();
+  }
+
+  function updateScoreStripUI() {
+    const p = state.currentPatient || {};
+    const setVal = (id, val) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = val !== undefined && val !== '' ? val : '-';
+    };
+    // Cập nhật trên thanh đầu Form
+    setVal('liveBmi', p.bmi);
+    setVal('liveCha', p.cha2ds2_vasc);
+    setVal('liveHas', p.has_bled);
+    setVal('liveAge', p.age);
+
+    // Cập nhật trong Sidebar bên trái (giữ cố định khi cuộn)
+    setVal('sidebarPatientId', p.patient_id ? `${p.patient_id} ${p.full_name ? '(' + p.full_name + ')' : ''}` : '---');
+    setVal('sideAge', p.age);
+    setVal('sideBmi', p.bmi);
+    setVal('sideCha', p.cha2ds2_vasc);
+    setVal('sideHas', p.has_bled);
+
+    // Cập nhật trạng thái Đã nhập của 4 giai đoạn ở Menu bên trái
+    const hasAdm = Boolean(p.admission_date);
+    const hasProc = Boolean(p.proc_date);
+    const has1M = Boolean(p.fu1m_date && p.fu1m_status && p.fu1m_status !== 'Chưa đến hạn');
+    const has3M = Boolean(p.fu3m_date && p.fu3m_rhythm);
+
+    const toggleStageDone = (stageKey, badgeId, isDone) => {
+      const badge = document.getElementById(badgeId);
+      if (badge) badge.style.display = isDone ? 'inline-block' : 'none';
+      document.querySelectorAll(`.sidebar-stage-btn[data-stage-tab="${stageKey}"]`).forEach(btn => {
+        btn.classList.toggle('done', isDone);
+      });
+    };
+
+    toggleStageDone('admission', 'sideBadgeAdm', hasAdm);
+    toggleStageDone('procedure', 'sideBadgeProc', hasProc);
+    toggleStageDone('fu1m', 'sideBadgeFu1m', has1M);
+    toggleStageDone('fu3m', 'sideBadgeFu3m', has3M);
+
+    const formEl = document.getElementById('crfFormContainer');
+    if (formEl) {
+      ['age', 'bmi', 'cha2ds2_vasc', 'has_bled', 'fu3m_months_from_proc', 'fu3m_time_to_recurrence_days'].forEach(k => {
+        const input = formEl.querySelector(`[data-field="${k}"]`);
+        if (input) input.value = p[k] || '';
+      });
+    }
+  }
+
+  function renderFormStage() {
+    const p = window.AF_SCHEMA.computeDerivedFields(state.currentPatient);
+    state.currentPatient = p;
+
+    document.querySelectorAll('[data-stage-tab]').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-stage-tab') === state.activeFormStage);
+    });
+
+    const headerTitle = document.getElementById('formHeaderTitle');
+    if (headerTitle) {
+      headerTitle.textContent = state.isEditingExisting
+        ? `Bảng RF • Hồ sơ bệnh nhân: ${p.patient_id} - ${p.full_name || 'Chưa nhập tên'}`
+        : `Bảng RF • Thêm bệnh nhân nghiên cứu mới (${p.patient_id})`;
+    }
+
+    updateScoreStripUI();
+
+    const container = document.getElementById('crfFormContainer');
+    if (!container) return;
+
+    const identityBarHtml = `
+      <div class="card" style="background:#f8fafc;border-color:#cbd5e1">
+        <div class="card-header" style="margin-bottom:0.75rem;padding-bottom:0.5rem">
+          <h3 class="card-title" style="font-size:0.95rem">Thông tin Định danh Bệnh nhân (Bảng dữ liệu: RF)</h3>
+          <span style="font-size:0.76rem;color:#475569">Mỗi mã BN lưu trên 1 hàng duy nhất trong Sheet <strong>RF</strong></span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Mã nghiên cứu (Patient ID) *</label>
+            <input class="form-control" data-field="patient_id" value="${escapeHtml(p.patient_id)}" placeholder="VD: RF-001" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mã bệnh án nội viện (MRN)</label>
+            <input class="form-control" data-field="hospital_id" value="${escapeHtml(p.hospital_id)}" placeholder="VD: BA2601234" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Họ và tên (hoặc tên viết tắt) *</label>
+            <input class="form-control" data-field="full_name" value="${escapeHtml(p.full_name)}" placeholder="VD: Nguyễn Văn A" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Năm sinh</label>
+            <input type="number" inputmode="numeric" class="form-control" data-field="birth_year" value="${escapeHtml(p.birth_year)}" placeholder="VD: 1965" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tuổi <span class="auto-badge">Tự tính</span></label>
+            <input class="form-control" data-field="age" value="${escapeHtml(p.age)}" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Giới tính</label>
+            ${renderSelect('sex', p.sex, ['Nam', 'Nữ'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số điện thoại (nhắc tái khám)</label>
+            <input type="tel" inputmode="tel" class="form-control" data-field="phone" value="${escapeHtml(p.phone)}" placeholder="09xxxxxxxx" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Người nhập / Cập nhật</label>
+            <input class="form-control" data-field="updated_by" value="${escapeHtml(p.updated_by || state.config.researcherName)}" />
+          </div>
+        </div>
+      </div>
+    `;
+
+    let stageContentHtml = '';
+    if (state.activeFormStage === 'admission') {
+      stageContentHtml = renderAdmissionStage(p);
+    } else if (state.activeFormStage === 'procedure') {
+      stageContentHtml = renderProcedureStage(p);
+    } else if (state.activeFormStage === 'fu1m') {
+      stageContentHtml = renderFu1mStage(p);
+    } else if (state.activeFormStage === 'fu3m') {
+      stageContentHtml = renderFu3mStage(p);
+    }
+
+    container.innerHTML = identityBarHtml + stageContentHtml;
+
+    container.querySelectorAll('[data-field]').forEach(el => {
+      el.addEventListener('input', () => collectFormValuesIntoState());
+      el.addEventListener('change', () => collectFormValuesIntoState());
+    });
+  }
+
+  function renderAdmissionStage(p) {
+    return `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Giai đoạn 1A: Lâm sàng &amp; Phân loại Rung nhĩ lúc Nhập viện</h3>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Ngày nhập viện</label>
+            <input type="date" class="form-control" data-field="admission_date" value="${escapeHtml(p.admission_date)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chiều cao (cm)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="height_cm" value="${escapeHtml(p.height_cm)}" placeholder="165" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cân nặng (kg)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="weight_kg" value="${escapeHtml(p.weight_kg)}" placeholder="65" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">BMI (kg/m²) <span class="auto-badge">Tự tính</span></label>
+            <input class="form-control" data-field="bmi" value="${escapeHtml(p.bmi)}" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phân loại Rung nhĩ</label>
+            ${renderSelect('af_type', p.af_type, [
+              'Rung nhĩ kịch phát',
+              'Rung nhĩ dai dẳng (không kịch phát)'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thời gian phát hiện RN (tháng)</label>
+            <input type="number" inputmode="numeric" class="form-control" data-field="af_duration_months" value="${escapeHtml(p.af_duration_months)}" placeholder="VD: 12" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Triệu chứng EHRA lúc nhập viện</label>
+            ${renderSelect('ehra_baseline', p.ehra_baseline, ['I', 'IIa', 'IIb', 'III', 'IV'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phân độ suy tim NYHA</label>
+            ${renderSelect('nyha_class', p.nyha_class, ['Không suy tim', 'NYHA I', 'NYHA II', 'NYHA III', 'NYHA IV'])}
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Giai đoạn 1B: Bệnh đồng mắc &amp; Tính điểm Nguy cơ (CHA₂DS₂-VASc &amp; HAS-BLED)</h3>
+          <span style="font-size:0.76rem;color:#0f766e;font-weight:600">Chạm để chọn bệnh đồng mắc (Tự động tính điểm)</span>
+        </div>
+        <div class="comorb-grid" style="margin-bottom:1rem">
+          ${renderCheckboxTile('comorb_hf', 'Suy tim / LVEF ≤ 40% (+1 CHA)', p.comorb_hf)}
+          ${renderCheckboxTile('comorb_htn', 'Tăng huyết áp (+1 CHA, +1 HAS)', p.comorb_htn)}
+          ${renderCheckboxTile('comorb_dm', 'Đái tháo đường (+1 CHA)', p.comorb_dm)}
+          ${renderCheckboxTile('comorb_stroke_tia', 'Đột quỵ / TIA / Thuyên tắc (+2 CHA, +1 HAS)', p.comorb_stroke_tia)}
+          ${renderCheckboxTile('comorb_vascular', 'Bệnh mạch vành / ĐM ngoại biên (+1 CHA)', p.comorb_vascular)}
+          ${renderCheckboxTile('comorb_renal_liver', 'Suy thận / Suy gan mạn (+1 HAS)', p.comorb_renal_liver)}
+          ${renderCheckboxTile('comorb_bleeding_predisp', 'Tiền sử xuất huyết / Thiếu máu (+1 HAS)', p.comorb_bleeding_predisp)}
+          ${renderCheckboxTile('comorb_labile_inr_alcohol', 'INR dao động / Dùng kháng tiểu cầu / Rượu (+1 HAS)', p.comorb_labile_inr_alcohol)}
+          ${renderCheckboxTile('comorb_osa', 'Hội chứng ngưng thở khi ngủ (OSA)', p.comorb_osa)}
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Bệnh lý tuyến giáp</label>
+            ${renderSelect('comorb_thyroid', p.comorb_thyroid, ['Không', 'Cường giáp', 'Suy giáp'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Điểm CHA₂DS₂-VASc <span class="auto-badge">Tự tính</span></label>
+            <input class="form-control" data-field="cha2ds2_vasc" value="${escapeHtml(p.cha2ds2_vasc)}" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Điểm HAS-BLED <span class="auto-badge">Tự tính</span></label>
+            <input class="form-control" data-field="has_bled" value="${escapeHtml(p.has_bled)}" readonly />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Giai đoạn 1C: Cận lâm sàng, Siêu âm tim &amp; Thuốc trước thủ thuật</h3>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Nhịp trên ECG nhập viện</label>
+            ${renderSelect('rhythm_admission', p.rhythm_admission, ['AF (Rung nhĩ)', 'SR (Nhịp xoang)', 'AFL/AT (Cuồng/Nhanh nhĩ)'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tần số tim nhập viện (ck/phút)</label>
+            <input type="number" inputmode="numeric" class="form-control" data-field="hr_baseline" value="${escapeHtml(p.hr_baseline)}" placeholder="95" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Siêu âm: LVEF (%)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="echo_lvef" value="${escapeHtml(p.echo_lvef)}" placeholder="62" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Đường kính nhĩ trái LAD (mm)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="echo_lad" value="${escapeHtml(p.echo_lad)}" placeholder="40" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thể tích nhĩ trái LAVI (mL/m²)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="echo_lavi" value="${escapeHtml(p.echo_lavi)}" placeholder="35" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Huyết khối tiểu nhĩ trái (TEE / MSCT)</label>
+            ${renderSelect('tee_msct_thrombus', p.tee_msct_thrombus, ['Không huyết khối', 'Có máu tụ âm tự nhiên (SEC)', 'Có huyết khối'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">eGFR (mL/phút/1.73m²)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="lab_egfr" value="${escapeHtml(p.lab_egfr)}" placeholder="80" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">NT-proBNP (pg/mL)</label>
+            <input type="number" inputmode="numeric" step="1" class="form-control" data-field="lab_ntprobnp" value="${escapeHtml(p.lab_ntprobnp)}" placeholder="450" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thuốc chống đông trước thủ thuật</label>
+            ${renderSelect('pre_oac', p.pre_oac, ['Rivaroxaban', 'Dabigatran', 'Apixaban', 'Edoxaban', 'Kháng Vitamin K', 'Không dùng'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thuốc chống loạn nhịp trước thủ thuật</label>
+            ${renderSelect('pre_aad', p.pre_aad, ['Amiodarone', 'Flecainide', 'Propafenone', 'Beta-blocker đơn thuần', 'Sotalol', 'Không dùng'])}
+          </div>
+          <div class="form-group col-span-2">
+            <label class="form-label">Ghi chú lâm sàng lúc nhập viện</label>
+            <input class="form-control" data-field="baseline_note" value="${escapeHtml(p.baseline_note)}" placeholder="Ghi chú đặc điểm bệnh sử, triệu chứng..." />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderProcedureStage(p) {
+    return `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Giai đoạn 2A: Kỹ thuật Can thiệp Triệt đốt Rung nhĩ bằng RF</h3>
+          <span style="font-size:0.75rem;color:#1e40af;background:#eff6ff;padding:0.25rem 0.6rem;border-radius:999px;font-weight:600;border:1px solid #bfdbfe">
+            Protocol cố định: Năng lượng RF • Hệ thống 3D EnSite X • Gây mê toàn thân • Chung 1 Ê-kíp
+          </span>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Ngày làm thủ thuật</label>
+            <input type="date" class="form-control" data-field="proc_date" value="${escapeHtml(p.proc_date)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Loại Catheter RF sử dụng</label>
+            <input class="form-control" data-field="catheter_type" value="${escapeHtml(p.catheter_type)}" placeholder="VD: TactiCath SE / TactiFlex SE..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Kết quả cô lập tĩnh mạch phổi (PVI)</label>
+            ${renderSelect('ablation_pvi', p.ablation_pvi, ['Thành công cô lập 4 TMP', 'Cô lập một phần', 'Không thực hiện PVI'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Đường đốt bổ sung ngoài PVI</label>
+            <input class="form-control" data-field="ablation_extra_lines" value="${escapeHtml(p.ablation_extra_lines)}" placeholder="Không / CTI / Posterior Wall Box / Roof line / Mitral..." />
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Giai đoạn 2B: Thông số Thời gian, Chiếu tia, Biến chứng &amp; Xuất viện</h3>
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Sốc điện chuyển nhịp trong thủ thuật</label>
+            ${renderSelect('cardioversion_intra', p.cardioversion_intra, ['Không', 'Có'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nhịp kết thúc thủ thuật</label>
+            ${renderSelect('rhythm_end_proc', p.rhythm_end_proc, ['SR (Nhịp xoang)', 'AF (Rung nhĩ)', 'AFL/AT'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tổng thời gian thủ thuật (phút)</label>
+            <input type="number" inputmode="numeric" step="1" class="form-control" data-field="proc_time_min" value="${escapeHtml(p.proc_time_min)}" placeholder="120" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thời gian phát năng lượng đốt RF (phút)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="ablation_time_min" value="${escapeHtml(p.ablation_time_min)}" placeholder="30" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thời gian chiếu tia X (phút)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="fluoro_time_min" value="${escapeHtml(p.fluoro_time_min)}" placeholder="9.5" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Liều tia X (mGy)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="fluoro_dose_mgy" value="${escapeHtml(p.fluoro_dose_mgy)}" placeholder="45" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Biến chứng quanh thủ thuật</label>
+            ${renderSelect('proc_complication', p.proc_complication, [
+              'Không',
+              'Tụ máu / Giả phình mạch đùi',
+              'Tràn dịch / Chèn ép tim cấp',
+              'TIA / Đột quỵ não',
+              'Liệt thần kinh hoành',
+              'Khác'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Chi tiết biến chứng &amp; xử trí</label>
+            <input class="form-control" data-field="proc_complication_note" value="${escapeHtml(p.proc_complication_note)}" placeholder="Mô tả nếu có biến chứng..." />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ngày xuất viện</label>
+            <input type="date" class="form-control" data-field="discharge_date" value="${escapeHtml(p.discharge_date)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nhịp lúc xuất viện</label>
+            ${renderSelect('discharge_rhythm', p.discharge_rhythm, ['SR (Nhịp xoang)', 'AF (Rung nhĩ)', 'AFL/AT'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thuốc chống đông xuất viện</label>
+            <input class="form-control" data-field="discharge_oac" value="${escapeHtml(p.discharge_oac)}" placeholder="VD: Rivaroxaban 20mg" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thuốc chống loạn nhịp xuất viện</label>
+            <input class="form-control" data-field="discharge_aad" value="${escapeHtml(p.discharge_aad)}" placeholder="VD: Amiodarone 200mg" />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderFu1mStage(p) {
+    let suggested1M = '';
+    if (p.proc_date) {
+      const d = new Date(p.proc_date);
+      if (!isNaN(d.getTime())) {
+        d.setDate(d.getDate() + 30);
+        suggested1M = d.toISOString().slice(0, 10);
+      }
+    }
+
+    return `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Giai đoạn 3: Theo dõi 1 Tháng sau Thủ thuật (Blanking Period)</h3>
+          ${suggested1M ? `<span style="font-size:0.78rem;color:#1e40af">Lịch hẹn 1 tháng dự kiến: <strong>${suggested1M}</strong></span>` : ''}
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Ngày tái khám 1 tháng</label>
+            <input type="date" class="form-control" data-field="fu1m_date" value="${escapeHtml(p.fu1m_date)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Trạng thái tái khám 1 tháng</label>
+            ${renderSelect('fu1m_status', p.fu1m_status, [
+              'Chưa đến hạn',
+              'Đã khám trực tiếp',
+              'Phỏng vấn qua điện thoại',
+              'Mất dấu (Lost to FU)'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phân độ triệu chứng EHRA lúc 1 tháng</label>
+            ${renderSelect('fu1m_ehra', p.fu1m_ehra, ['', 'I', 'IIa', 'IIb', 'III', 'IV'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nhịp trên ECG / Holter tại 1 tháng</label>
+            ${renderSelect('fu1m_ecg_rhythm', p.fu1m_ecg_rhythm, ['', 'SR (Nhịp xoang)', 'AF (Rung nhĩ)', 'AFL/AT (Cuồng/Nhanh nhĩ)'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tái phát sớm trong Blanking (ERAF ≥ 30s)</label>
+            ${renderSelectWithLabels('fu1m_early_recurrence', p.fu1m_early_recurrence, [
+              { val: '', text: '-- Chọn --' },
+              { val: '0', text: '0 - Không tái phát sớm' },
+              { val: '1', text: '1 - Có cơn tái phát sớm (AF/AFL/AT)' }
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Xử trí cơn tái phát sớm</label>
+            ${renderSelect('fu1m_early_recurrence_action', p.fu1m_early_recurrence_action, [
+              '',
+              'Không tái phát',
+              'Theo dõi nội khoa',
+              'Tăng/Đổi thuốc AAD',
+              'Sốc điện chuyển nhịp',
+              'Nhập viện'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tuân thủ thuốc chống đông (OAC)</label>
+            ${renderSelect('fu1m_oac_adherence', p.fu1m_oac_adherence, [
+              '',
+              'Uống đều đủ liều',
+              'Quên liều / Gián đoạn',
+              'Tự ý ngưng thuốc'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thuốc chống loạn nhịp đang dùng tại 1 tháng</label>
+            <input class="form-control" data-field="fu1m_aad_current" value="${escapeHtml(p.fu1m_aad_current)}" placeholder="VD: Amiodarone 200mg / Đã ngưng" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Biến cố muộn sau xuất viện</label>
+            <input class="form-control" data-field="fu1m_late_complication" value="${escapeHtml(p.fu1m_late_complication)}" placeholder="Không / Tụ máu muộn / Xuất huyết..." />
+          </div>
+          <div class="form-group col-span-2">
+            <label class="form-label">Ghi chú tái khám 1 tháng</label>
+            <input class="form-control" data-field="fu1m_note" value="${escapeHtml(p.fu1m_note)}" placeholder="Nhận xét lâm sàng tại mốc 1 tháng..." />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderFu3mStage(p) {
+    let suggested3M = '';
+    if (p.proc_date) {
+      const d = new Date(p.proc_date);
+      if (!isNaN(d.getTime())) {
+        d.setDate(d.getDate() + 90);
+        suggested3M = d.toISOString().slice(0, 10);
+      }
+    }
+
+    return `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Giai đoạn 4: Theo dõi Ngoài 3 Tháng (3M / 6M / 12M - Đánh giá Kết cục Chính)</h3>
+          ${suggested3M ? `<span style="font-size:0.78rem;color:#15803d">Mốc kết thúc Blanking (90 ngày): <strong>${suggested3M}</strong></span>` : ''}
+        </div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label class="form-label">Ngày đánh giá ngoài 3 tháng</label>
+            <input type="date" class="form-control" data-field="fu3m_date" value="${escapeHtml(p.fu3m_date)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Mốc theo dõi</label>
+            ${renderSelect('fu3m_milestone', p.fu3m_milestone, ['', '3 tháng', '6 tháng', '9 tháng', '12 tháng', '>12 tháng'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Số tháng sau thủ thuật <span class="auto-badge">Tự tính</span></label>
+            <input class="form-control" data-field="fu3m_months_from_proc" value="${escapeHtml(p.fu3m_months_from_proc)}" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phân độ EHRA (&gt;3 tháng)</label>
+            ${renderSelect('fu3m_ehra', p.fu3m_ehra, ['', 'I', 'IIa', 'IIb', 'III', 'IV'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Phương pháp tầm soát loạn nhịp</label>
+            ${renderSelect('fu3m_monitoring_method', p.fu3m_monitoring_method, [
+              '',
+              'ECG 12 chuyển đạo',
+              'Holter ECG 24h',
+              'Holter ECG 48-72h+',
+              'Smartwatch / ECG cá nhân'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Nhịp ghi nhận (&gt;3 tháng)</label>
+            ${renderSelect('fu3m_rhythm', p.fu3m_rhythm, ['', 'SR (Nhịp xoang)', 'AF (Rung nhĩ)', 'AFL/AT (Cuồng/Nhanh nhĩ)'])}
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="color:#b91c1c">Kết cục chính: Tái phát AF/AT ≥30s sau Blanking</label>
+            ${renderSelectWithLabels('fu3m_af_recurrence', p.fu3m_af_recurrence, [
+              { val: '', text: '-- Chọn kết cục --' },
+              { val: '0', text: '0 - Không tái phát (Thành công)' },
+              { val: '1', text: '1 - Có tái phát loạn nhịp nhĩ ≥ 30s' }
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Ngày phát hiện tái phát (nếu có)</label>
+            <input type="date" class="form-control" data-field="fu3m_recurrence_date" value="${escapeHtml(p.fu3m_recurrence_date)}" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thời gian sống còn không loạn nhịp (ngày) <span class="auto-badge">Kaplan-Meier</span></label>
+            <input class="form-control" data-field="fu3m_time_to_recurrence_days" value="${escapeHtml(p.fu3m_time_to_recurrence_days)}" readonly />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tình trạng dùng thuốc AAD (&gt;3 tháng)</label>
+            ${renderSelect('fu3m_aad_status', p.fu3m_aad_status, [
+              '',
+              'Đã ngưng thuốc AAD (Off-AAD)',
+              'Đang duy trì AAD (On-AAD)'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tình trạng dùng thuốc chống đông (&gt;3 tháng)</label>
+            ${renderSelect('fu3m_oac_status', p.fu3m_oac_status, [
+              '',
+              'Đang duy trì OAC',
+              'Ngưng theo chỉ định (CHA2DS2-VASc thấp)',
+              'Bệnh nhân tự ngưng'
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Siêu âm kiểm tra: LVEF (%)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="fu3m_echo_lvef" value="${escapeHtml(p.fu3m_echo_lvef)}" placeholder="64" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Đường kính LA tái khám (mm)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="fu3m_echo_lad" value="${escapeHtml(p.fu3m_echo_lad)}" placeholder="37" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Thể tích LAVI tái khám (mL/m²)</label>
+            <input type="number" inputmode="decimal" step="0.1" class="form-control" data-field="fu3m_echo_lavi" value="${escapeHtml(p.fu3m_echo_lavi)}" placeholder="30" />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tái nhập viện do tim mạch</label>
+            ${renderSelectWithLabels('fu3m_rehospitalization', p.fu3m_rehospitalization, [
+              { val: '', text: '-- Chọn --' },
+              { val: '0', text: '0 - Không' },
+              { val: '1', text: '1 - Có tái nhập viện' }
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Triệt đốt lại (Redo Ablation)</label>
+            ${renderSelectWithLabels('fu3m_redo_ablation', p.fu3m_redo_ablation, [
+              { val: '', text: '-- Chọn --' },
+              { val: '0', text: '0 - Không' },
+              { val: '1', text: '1 - Đã / Chỉ định đốt lại' }
+            ])}
+          </div>
+          <div class="form-group">
+            <label class="form-label">Biến cố lâm sàng nặng (Đột quỵ/Xuất huyết/Tử vong)</label>
+            <input class="form-control" data-field="fu3m_major_events" value="${escapeHtml(p.fu3m_major_events)}" placeholder="Không" />
+          </div>
+          <div class="form-group col-span-2">
+            <label class="form-label">Ghi chú theo dõi dài hạn (3M / 6M / 12M)</label>
+            <input class="form-control" data-field="fu3m_note" value="${escapeHtml(p.fu3m_note)}" placeholder="Ghi chú diễn tiến các mốc 3 tháng, 6 tháng, 12 tháng..." />
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function renderSelect(fieldKey, currentVal, options) {
+    const optsHtml = options.map(opt => {
+      const selected = String(currentVal || '') === String(opt) ? 'selected' : '';
+      const label = opt === '' ? '-- Chưa chọn --' : opt;
+      return `<option value="${escapeHtml(opt)}" ${selected}>${escapeHtml(label)}</option>`;
+    }).join('');
+    return `<select class="form-control" data-field="${fieldKey}">${optsHtml}</select>`;
+  }
+
+  function renderSelectWithLabels(fieldKey, currentVal, items) {
+    const optsHtml = items.map(item => {
+      const selected = String(currentVal ?? '') === String(item.val) ? 'selected' : '';
+      return `<option value="${escapeHtml(item.val)}" ${selected}>${escapeHtml(item.text)}</option>`;
+    }).join('');
+    return `<select class="form-control" data-field="${fieldKey}">${optsHtml}</select>`;
+  }
+
+  function renderCheckboxTile(fieldKey, label, currentVal) {
+    const checked = String(currentVal) === '1' ? 'checked' : '';
+    return `
+      <label class="check-tile">
+        <input type="checkbox" data-field="${fieldKey}" ${checked} />
+        <span>${escapeHtml(label)}</span>
+      </label>
+    `;
+  }
+
+  async function saveCurrentPatient(andReturnToList) {
+    collectFormValuesIntoState();
+    const p = state.currentPatient;
+
+    if (!p.patient_id || !p.patient_id.trim()) {
+      showToast('Vui lòng nhập Mã nghiên cứu (Patient ID), ví dụ: RF-001');
+      return;
+    }
+
+    p.patient_id = p.patient_id.trim().toUpperCase();
+    p.updated_at = new Date().toISOString();
+    if (!p.updated_by) {
+      p.updated_by = state.config.researcherName || 'BS. Nghiên cứu viên';
+    }
+
+    const existingIdx = state.patients.findIndex(item => item.patient_id.toUpperCase() === p.patient_id);
+    if (existingIdx >= 0) {
+      state.patients[existingIdx] = JSON.parse(JSON.stringify(p));
+    } else {
+      state.patients.unshift(JSON.parse(JSON.stringify(p)));
+    }
+
+    state.isEditingExisting = true;
+    savePatientsToLocal();
+    renderKPIs();
+    renderFollowUpAlerts();
+
+    if (state.config.gasUrl) {
+      await pushPatientToGoogleSheet(p);
+    } else {
+      showToast(`Đã lưu hồ sơ ${p.patient_id} vào bảng RF trên máy.`);
+    }
+
+    if (andReturnToList) {
+      switchMainTab('list');
+    } else {
+      renderFormStage();
+    }
+  }
+
+  async function deleteCurrentPatient() {
+    const p = state.currentPatient;
+    if (!p || !p.patient_id) return;
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa hồ sơ bệnh nhân ${p.patient_id} (${p.full_name || ''}) khỏi bảng RF?`)) {
+      return;
+    }
+
+    state.patients = state.patients.filter(item => item.patient_id !== p.patient_id);
+    savePatientsToLocal();
+
+    if (state.config.gasUrl) {
+      try {
+        state.syncing = true;
+        updateSyncStatusUI();
+        await fetch(state.config.gasUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({
+            action: 'delete',
+            pin: state.config.pin,
+            patient_id: p.patient_id,
+            updated_by: state.config.researcherName
+          })
+        });
+      } catch (e) {
+        console.warn('Lỗi xóa trên Cloud:', e);
+      } finally {
+        state.syncing = false;
+        updateSyncStatusUI();
+      }
+    }
+
+    showToast(`Đã xóa hồ sơ ${p.patient_id}.`);
+    switchMainTab('list');
+    renderAll();
+  }
+
+  async function pushPatientToGoogleSheet(patient) {
+    if (!state.config.gasUrl) return;
+    try {
+      state.syncing = true;
+      updateSyncStatusUI();
+      const res = await fetch(state.config.gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'upsert',
+          pin: state.config.pin,
+          patient: patient
+        })
+      });
+      const data = await res.json();
+      if (data && data.ok) {
+        showToast(`Đã lưu & đồng bộ ${patient.patient_id} lên bảng RF (Google Sheets)!`);
+      } else {
+        showToast('Lưu máy thành công, nhưng Google Sheet báo lỗi: ' + (data.error || 'Không rõ'));
+      }
+    } catch (err) {
+      console.error('Lỗi đồng bộ Google Sheets:', err);
+      showToast('Đã lưu tại máy. Chưa thể kết nối Google Sheet (kiểm tra URL Web App).');
+    } finally {
+      state.syncing = false;
+      updateSyncStatusUI();
+    }
+  }
+
+  async function fetchFromGoogleSheet(silent) {
+    if (!state.config.gasUrl) {
+      if (!silent) openConfigModal();
+      return;
+    }
+    try {
+      state.syncing = true;
+      updateSyncStatusUI();
+      const url = new URL(state.config.gasUrl);
+      if (state.config.pin) url.searchParams.set('pin', state.config.pin);
+      url.searchParams.set('_t', Date.now());
+
+      const res = await fetch(url.toString(), { method: 'GET' });
+      const data = await res.json();
+      if (data && data.ok && Array.isArray(data.patients)) {
+        if (data.patients.length > 0) {
+          state.patients = data.patients.map(p => window.AF_SCHEMA.computeDerivedFields(p));
+          savePatientsToLocal();
+          renderAll();
+          if (!silent) showToast(`Đã tải ${data.patients.length} hồ sơ từ bảng RF (Google Sheets)!`);
+        } else {
+          if (!silent) showToast('Bảng RF trên Google Sheet hiện đang trống. Bạn có thể nhấn "Đẩy dữ liệu hiện có lên Sheet".');
+        }
+      } else {
+        if (!silent) showToast('Lỗi từ Google Sheet: ' + (data.error || 'Không hợp lệ'));
+      }
+    } catch (err) {
+      console.error('Không thể tải từ Google Sheet:', err);
+      if (!silent) showToast('Không thể kết nối URL Google Apps Script. Hãy kiểm tra quyền "Bất kỳ ai (Anyone)".');
+    } finally {
+      state.syncing = false;
+      updateSyncStatusUI();
+    }
+  }
+
+  async function pushAllLocalToGoogleSheet() {
+    if (!state.config.gasUrl) {
+      showToast('Vui lòng nhập URL Google Apps Script trước.');
+      return;
+    }
+    try {
+      state.syncing = true;
+      updateSyncStatusUI();
+      const res = await fetch(state.config.gasUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({
+          action: 'bulk_sync',
+          pin: state.config.pin,
+          updated_by: state.config.researcherName,
+          patients: state.patients
+        })
+      });
+      const data = await res.json();
+      if (data && data.ok) {
+        showToast(`Đồng bộ thành công lên bảng RF (Tạo mới: ${data.createdCount}, Cập nhật: ${data.updatedCount})!`);
+      } else {
+        showToast('Lỗi đồng bộ: ' + (data.error || 'Không xác định'));
+      }
+    } catch (e) {
+      showToast('Không thể đẩy dữ liệu lên Google Sheets. Kiểm tra lại Web App URL.');
+    } finally {
+      state.syncing = false;
+      updateSyncStatusUI();
+    }
+  }
+
+  function renderStatistics() {
+    const container = document.getElementById('statsContentContainer');
+    if (!container) return;
+
+    const pts = state.patients;
+    const n = pts.length || 1;
+
+    const avg = (arr) => arr.length ? (arr.reduce((a, b) => a + b, 0) / arr.length).toFixed(1) : '-';
+
+    const ages = pts.map(p => parseFloat(p.age)).filter(v => !isNaN(v));
+    const chas = pts.map(p => parseFloat(p.cha2ds2_vasc)).filter(v => !isNaN(v));
+    const lavis = pts.map(p => parseFloat(p.echo_lavi)).filter(v => !isNaN(v));
+    const procTimes = pts.map(p => parseFloat(p.proc_time_min)).filter(v => !isNaN(v));
+    const ablationTimes = pts.map(p => parseFloat(p.ablation_time_min)).filter(v => !isNaN(v));
+    const fluoroTimes = pts.map(p => parseFloat(p.fluoro_time_min)).filter(v => !isNaN(v));
+
+    const paroxysmalCount = pts.filter(p => p.af_type === 'Rung nhĩ kịch phát').length;
+    const persistentCount = pts.filter(p => p.af_type === 'Rung nhĩ dai dẳng (không kịch phát)').length;
+
+    const compCount = pts.filter(p => p.proc_complication && p.proc_complication !== 'Không').length;
+    const erafCount = pts.filter(p => String(p.fu1m_early_recurrence) === '1').length;
+    const fu3mPatients = pts.filter(p => p.fu3m_date && p.fu3m_rhythm);
+    const lateRecCount = fu3mPatients.filter(p => String(p.fu3m_af_recurrence) === '1').length;
+    const success3mCount = fu3mPatients.filter(p => String(p.fu3m_af_recurrence) === '0').length;
+
+    container.innerHTML = `
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Xuất Bảng Dữ liệu "RF" (1 Bệnh nhân = 1 Hàng ngang)</h3>
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+            <button class="btn btn-primary" onclick="window.AF_APP.exportCSV('spss')">
+              Tải CSV Mã hóa số (Dùng cho SPSS / R / Stata)
+            </button>
+            <button class="btn btn-secondary" onclick="window.AF_APP.exportCSV('label')">
+              Tải CSV Nhãn Tiếng Việt (Dùng cho Excel / Báo cáo)
+            </button>
+          </div>
+        </div>
+        <p style="margin:0;font-size:0.85rem;color:#475569">
+          Bảng dữ liệu duy nhất <strong>RF</strong> gồm <strong>${window.AF_SCHEMA.columns.length} biến số</strong> (Protocol: Năng lượng RF, Hệ thống 3D EnSite X, Gây mê toàn thân, Chung 1 Ê-kíp).
+          Ở chế độ <strong>Mã hóa số SPSS/R</strong>, biến Phân loại Rung nhĩ được mã hóa tự động (<code>1 = Rung nhĩ kịch phát</code>, <code>2 = Rung nhĩ dai dẳng (không kịch phát)</code>).
+        </p>
+      </div>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:1rem">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">1. Đặc điểm Lâm sàng &amp; Siêu âm nền (n = ${pts.length})</h3>
+          </div>
+          <table class="data-table">
+            <tbody>
+              <tr><td>Tuổi trung bình (năm)</td><td><strong>${avg(ages)}</strong></td></tr>
+              <tr><td>Rung nhĩ kịch phát</td><td><strong>${paroxysmalCount}/${pts.length} (${Math.round(paroxysmalCount/n*100)}%)</strong></td></tr>
+              <tr><td>Rung nhĩ dai dẳng (không kịch phát)</td><td><strong>${persistentCount}/${pts.length} (${Math.round(persistentCount/n*100)}%)</strong></td></tr>
+              <tr><td>Điểm CHA₂DS₂-VASc trung bình</td><td><strong>${avg(chas)}</strong></td></tr>
+              <tr><td>Thể tích nhĩ trái LAVI trung bình (mL/m²)</td><td><strong>${avg(lavis)}</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">2. Thông số Thủ thuật RF (EnSite X, Gây mê)</h3>
+          </div>
+          <table class="data-table">
+            <tbody>
+              <tr><td>Tổng thời gian thủ thuật trung bình</td><td><strong>${avg(procTimes)}</strong> phút</td></tr>
+              <tr><td>Thời gian phát năng lượng đốt RF trung bình</td><td><strong>${avg(ablationTimes)}</strong> phút</td></tr>
+              <tr><td>Thời gian chiếu tia trung bình</td><td><strong>${avg(fluoroTimes)}</strong> phút</td></tr>
+              <tr><td>Biến chứng quanh thủ thuật</td><td><strong>${compCount}/${pts.length} (${Math.round(compCount/n*100)}%)</strong></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">3. Kết cục Theo dõi 1 Tháng &amp; Ngoài 3 Tháng</h3>
+          </div>
+          <table class="data-table">
+            <tbody>
+              <tr><td>Tái phát sớm trong Blanking (1 tháng - ERAF)</td><td><strong>${erafCount}</strong> ca</td></tr>
+              <tr><td>Số ca đã có dữ liệu đánh giá &gt;3 tháng</td><td><strong>${fu3mPatients.length}</strong> ca</td></tr>
+              <tr><td>Duy trì nhịp xoang không tái phát (&gt;3 tháng)</td><td style="color:#15803d"><strong>${success3mCount}/${fu3mPatients.length || 0} (${fu3mPatients.length ? Math.round(success3mCount/fu3mPatients.length*100) : 0}%)</strong></td></tr>
+              <tr><td>Tái phát loạn nhịp nhĩ muộn (&gt;3 tháng)</td><td style="color:#b91c1c"><strong>${lateRecCount}/${fu3mPatients.length || 0}</strong> ca</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    `;
+  }
+
+  function exportCSV(mode) {
+    const cols = window.AF_SCHEMA.columns;
+    const headers = cols.map(c => c.key);
+
+    const rows = [headers.join(',')];
+
+    state.patients.forEach(p => {
+      const computed = window.AF_SCHEMA.computeDerivedFields(p);
+      const rowCells = cols.map(col => {
+        let rawVal = computed[col.key] !== undefined && computed[col.key] !== null ? String(computed[col.key]) : '';
+        if (mode === 'spss' && col.spssMap && rawVal !== '') {
+          if (Object.prototype.hasOwnProperty.call(col.spssMap, rawVal)) {
+            rawVal = String(col.spssMap[rawVal]);
+          }
+        }
+        const escaped = rawVal.replace(/"/g, '""');
+        return `"${escaped}"`;
+      });
+      rows.push(rowCells.join(','));
+    });
+
+    const csvContent = '\uFEFF' + rows.join('\r\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const dateStr = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = mode === 'spss'
+      ? `RF_Pilot_SPSS_Coded_${dateStr}.csv`
+      : `RF_Pilot_Full_Labels_${dateStr}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+
+    showToast(mode === 'spss'
+      ? 'Đã tải file CSV bảng RF (Mã hóa số chuẩn SPSS/R)!'
+      : 'Đã tải file CSV bảng RF (Nhãn tiếng Việt)!');
+  }
+
+  function openConfigModal() {
+    const modal = document.getElementById('configModal');
+    if (!modal) return;
+    document.getElementById('cfgResearcherName').value = state.config.researcherName || '';
+    document.getElementById('cfgGasUrl').value = state.config.gasUrl || '';
+    document.getElementById('cfgPin').value = state.config.pin || '';
+    modal.classList.add('open');
+  }
+
+  function closeConfigModal() {
+    const modal = document.getElementById('configModal');
+    if (modal) modal.classList.remove('open');
+  }
+
+  function saveConfigFromModal() {
+    state.config.researcherName = document.getElementById('cfgResearcherName').value.trim() || 'BS. Nghiên cứu viên';
+    state.config.gasUrl = document.getElementById('cfgGasUrl').value.trim();
+    state.config.pin = document.getElementById('cfgPin').value.trim();
+    saveConfig();
+    closeConfigModal();
+    showToast('Đã lưu cấu hình kết nối bảng RF!');
+    if (state.config.gasUrl) {
+      fetchFromGoogleSheet(false);
+    }
+  }
+
+  function copyShareableTeamLink() {
+    const gasUrl = document.getElementById('cfgGasUrl').value.trim() || state.config.gasUrl;
+    const pin = document.getElementById('cfgPin').value.trim() || state.config.pin;
+
+    if (!gasUrl) {
+      showToast('Hãy dán URL Web App Google Apps Script trước khi tạo link chia sẻ nhóm.');
+      return;
+    }
+
+    const baseUrl = window.location.origin + window.location.pathname;
+    const shareUrl = new URL(baseUrl);
+    shareUrl.searchParams.set('gasUrl', gasUrl);
+    if (pin) shareUrl.searchParams.set('pin', pin);
+
+    navigator.clipboard.writeText(shareUrl.toString()).then(() => {
+      showToast('Đã copy đường link chia sẻ nhóm! Đồng nghiệp mở link này sẽ tự động kết nối vào bảng RF.');
+    }).catch(() => {
+      window.prompt('Copy đường link dưới đây gửi cho nhóm nghiên cứu:', shareUrl.toString());
+    });
+  }
+
+  function showToast(msg) {
+    const container = document.getElementById('toastContainer');
+    if (!container) return;
+    const el = document.createElement('div');
+    el.className = 'toast';
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => {
+      el.remove();
+    }, 3600);
+  }
+
+  function escapeHtml(str) {
+    if (str === undefined || str === null) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;');
+  }
+
+  window.AF_APP = {
+    init,
+    toggleSidebar,
+    closeMobileSidebar,
+    startNewPatient,
+    openPatient: openPatientForEdit,
+    saveCurrentPatient,
+    deleteCurrentPatient,
+    openConfigModal,
+    closeConfigModal,
+    saveConfigFromModal,
+    copyShareableTeamLink,
+    fetchFromGoogleSheet,
+    pushAllLocalToGoogleSheet,
+    exportCSV
+  };
+
+  document.addEventListener('DOMContentLoaded', init);
+})();
+
+</script>
 </body>
 </html>
