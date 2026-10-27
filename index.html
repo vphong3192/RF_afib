@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
+  <title>eCRF Triệt Đốt Rung Nhĩ bằng RF - Nghiên Cứu Pilot (Bảng dữ liệu: RF)</title>
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+
+  <!-- TOP STICKY HEADER -->
+  <header class="app-header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button
+          type="button"
+          class="sidebar-toggle-btn"
+          onclick="window.AF_APP.toggleSidebar()"
+          title="Đóng / Mở Menu điều hướng bên trái"
+          aria-label="Đóng mở menu bên trái"
+        >
+          &#9776;
+        </button>
+
+        <div class="brand-title">
+          <span class="brand-badge">SHEET: RF</span>
+          <div class="brand-text-wrap">
+            <h1>CSDL Nghiên Cứu Triệt Đốt Rung Nhĩ (RF)</h1>
+            <div class="brand-subtitle">Protocol: Năng lượng RF • Hệ thống 3D EnSite X • Gây mê toàn thân • Chung 1 Ê-kíp</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="sync-pill" onclick="window.AF_APP.openConfigModal()" title="Nhấn để cấu hình Google Sheets &amp; Tên người nhập">
+          <span id="syncDot" class="sync-dot"></span>
+          <span id="syncStatusText">Bảng RF (Local)</span>
+          <span class="hide-on-mobile">•</span>
+          <strong id="researcherBadge" class="hide-on-mobile">BS. Nghiên cứu viên</strong>
+        </div>
+        <button class="btn btn-sm btn-secondary hide-on-mobile" onclick="window.AF_APP.fetchFromGoogleSheet(false)" title="Tải dữ liệu mới nhất từ bảng RF trên Google Sheets">
+          Đồng bộ Sheet RF
+        </button>
+        <button class="btn btn-sm btn-primary" style="background:#0284c7" onclick="window.AF_APP.openConfigModal()">
+          Cloud &amp; Share
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- APP SHELL: LEFT SIDEBAR + MAIN CONTENT -->
+  <div class="app-layout">
+
+    <!-- Backdrop khi mở menu trái trên Điện thoại -->
+    <div class="sidebar-backdrop" onclick="window.AF_APP.closeMobileSidebar()"></div>
+
+    <!-- LEFT STICKY & COLLAPSIBLE SIDEBAR -->
+    <aside id="appSidebar" class="app-sidebar" aria-label="Menu điều hướng và các giai đoạn nghiên cứu">
+      <div>
+        <!-- PHẦN 1: PHÂN HỆ CHÍNH -->
+        <div class="sidebar-section-label">
+          <span class="hide-when-collapsed">Phân hệ chính</span>
+        </div>
+        <div class="sidebar-nav-list">
+          <button type="button" class="sidebar-nav-btn active" data-main-tab="list" title="1. Danh sách Bệnh nhân &amp; Lịch tái khám">
+            <span class="nav-icon-badge">1</span>
+            <span class="hide-when-collapsed">Danh sách &amp; Lịch tái khám</span>
+          </button>
+          <button type="button" class="sidebar-nav-btn" data-main-tab="form" title="2. Nhập liệu Bệnh án Nghiên cứu (eCRF 4 giai đoạn)">
+            <span class="nav-icon-badge">2</span>
+            <span class="hide-when-collapsed">Nhập liệu Bệnh án (eCRF)</span>
+          </button>
+          <button type="button" class="sidebar-nav-btn" data-main-tab="stats" title="3. Thống kê Pilot &amp; Xuất SPSS / R / Excel">
+            <span class="nav-icon-badge">3</span>
+            <span class="hide-when-collapsed">Thống kê &amp; Xuất SPSS/R</span>
+          </button>
+        </div>
+
+        <!-- PHẦN 2: CÁC GIAI ĐOẠN NHẬP LIỆU (CỐ ĐỊNH BÊN TRÁI KHI CUỘN TRANG) -->
+        <div class="sidebar-section-label">
+          <span class="hide-when-collapsed">Các giai đoạn bệnh án (eCRF)</span>
+        </div>
+        <div class="sidebar-stages-box">
+          <div class="sidebar-stage-list">
+            <button type="button" class="sidebar-stage-btn active" data-stage-tab="admission" title="Giai đoạn 1: Nhập viện (Baseline)">
+              <span class="stage-index-circle">1</span>
+              <div class="stage-text-col hide-when-collapsed">
+                <div class="stage-title-row">
+                  <span class="stage-name-text">Nhập viện (Baseline)</span>
+                  <span id="sideBadgeAdm" class="stage-done-pill" style="display:none">Đã nhập</span>
+                </div>
+                <span class="stage-sub-text">Kịch phát/Dai dẳng, Siêu âm</span>
+              </div>
+            </button>
+
+            <button type="button" class="sidebar-stage-btn" data-stage-tab="procedure" title="Giai đoạn 2: Thủ thuật Đốt RF">
+              <span class="stage-index-circle">2</span>
+              <div class="stage-text-col hide-when-collapsed">
+                <div class="stage-title-row">
+                  <span class="stage-name-text">Thủ thuật Đốt RF</span>
+                  <span id="sideBadgeProc" class="stage-done-pill" style="display:none">Đã nhập</span>
+                </div>
+                <span class="stage-sub-text">PVI, Đường đốt phụ, Chiếu tia</span>
+              </div>
+            </button>
+
+            <button type="button" class="sidebar-stage-btn" data-stage-tab="fu1m" title="Giai đoạn 3: Theo dõi 1 Tháng">
+              <span class="stage-index-circle">3</span>
+              <div class="stage-text-col hide-when-collapsed">
+                <div class="stage-title-row">
+                  <span class="stage-name-text">Theo dõi 1 Tháng</span>
+                  <span id="sideBadgeFu1m" class="stage-done-pill" style="display:none">Đã nhập</span>
+                </div>
+                <span class="stage-sub-text">Blanking period, ERAF, Thuốc</span>
+              </div>
+            </button>
+
+            <button type="button" class="sidebar-stage-btn" data-stage-tab="fu3m" title="Giai đoạn 4: Theo dõi >3 Tháng">
+              <span class="stage-index-circle">4</span>
+              <div class="stage-text-col hide-when-collapsed">
+                <div class="stage-title-row">
+                  <span class="stage-name-text">Theo dõi &gt;3 Tháng</span>
+                  <span id="sideBadgeFu3m" class="stage-done-pill" style="display:none">Đã nhập</span>
+                </div>
+                <span class="stage-sub-text">Holter, Tái phát muộn, Siêu âm</span>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        <!-- PHẦN 3: BẢNG ĐIỂM TỰ ĐỘNG TRONG SIDEBAR (GIỮ KHI CUỘN) -->
+        <div class="sidebar-live-scores hide-when-collapsed">
+          <div style="font-size:0.74rem;font-weight:700;color:#1e40af;display:flex;justify-content:space-between">
+            <span>Đang chọn:</span>
+            <strong id="sidebarPatientId">---</strong>
+          </div>
+          <div class="sidebar-score-grid">
+            <div class="sidebar-score-item">
+              <span>Tuổi</span>
+              <strong id="sideAge">-</strong>
+            </div>
+            <div class="sidebar-score-item">
+              <span>BMI</span>
+              <strong id="sideBmi">-</strong>
+            </div>
+            <div class="sidebar-score-item">
+              <span>CHA₂DS₂-VASc</span>
+              <strong id="sideCha">-</strong>
+            </div>
+            <div class="sidebar-score-item">
+              <span>HAS-BLED</span>
+              <strong id="sideHas">-</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FOOTER SIDEBAR -->
+      <div class="sidebar-footer">
+        <button type="button" class="btn btn-primary" onclick="window.AF_APP.startNewPatient()" title="Thêm bệnh nhân nghiên cứu mới">
+          <span>+</span>
+          <span class="hide-when-collapsed">Thêm Bệnh Nhân Mới</span>
+        </button>
+        <button type="button" class="btn btn-sm btn-secondary hide-on-mobile" onclick="window.AF_APP.toggleSidebar()">
+          <span class="hide-when-collapsed">&laquo; Thu gọn menu trái</span>
+          <span style="display:none" id="expandIconLabel">&raquo;</span>
+        </button>
+      </div>
+    </aside>
+
+    <!-- MAIN WORKSPACE -->
+    <main class="main-container">
+
+      <!-- KPI Cards -->
+      <section id="kpiGrid" class="kpi-grid"></section>
+
+      <!-- Follow-up Due Alerts -->
+      <div id="followUpAlertContainer"></div>
+
+      <!-- TAB 1: DANH SÁCH BỆNH NHÂN (BẢNG RF) -->
+      <section id="panel-list" class="tab-panel" style="display:block">
+        <div class="card">
+          <div class="card-header">
+            <h2 class="card-title">Bảng Dữ Liệu Duy Nhất: RF (1 Bệnh nhân = 1 Hàng tổng hợp)</h2>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+              <button class="btn btn-primary" onclick="window.AF_APP.startNewPatient()">
+                + Thêm Bệnh Nhân Mới
+              </button>
+              <button class="btn btn-secondary" onclick="window.AF_APP.exportCSV('spss')">
+                Xuất CSV cho SPSS/R
+              </button>
+            </div>
+          </div>
+
+          <!-- Bộ lọc & Tìm kiếm -->
+          <div style="display:flex;gap:0.65rem;flex-wrap:wrap;margin-bottom:1rem">
+            <input
+              id="searchInput"
+              type="text"
+              class="form-control"
+              style="flex:1;min-width:210px"
+              placeholder="Tìm theo Mã NC (RF-001), Mã BA, Họ tên, SĐT..."
+            />
+            <select id="afTypeFilter" class="form-control" style="flex:1;min-width:200px">
+              <option value="ALL">Tất cả phân loại rung nhĩ</option>
+              <option value="Rung nhĩ kịch phát">Rung nhĩ kịch phát</option>
+              <option value="Rung nhĩ dai dẳng (không kịch phát)">Rung nhĩ dai dẳng (không kịch phát)</option>
+            </select>
+            <select id="statusFilter" class="form-control" style="flex:1;min-width:180px">
+              <option value="ALL">Tất cả giai đoạn hồ sơ</option>
+              <option value="1_NhapVien">1. Mới nhập viện</option>
+              <option value="2_DaThuThuat">2. Đã đốt RF</option>
+              <option value="3_DaTheoDoi_1T">3. Đã theo dõi 1 tháng</option>
+              <option value="4_HoanTat_Tren3T">4. Đã theo dõi &gt;3 tháng</option>
+            </select>
+          </div>
+
+          <!-- Bảng trên Máy tính / Tablet ngang -->
+          <div class="table-wrap desktop-table-only">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Mã NC / Mã BA</th>
+                  <th>Họ tên &amp; Nhân khẩu</th>
+                  <th>Phân loại RN &amp; Nguy cơ</th>
+                  <th>Thủ thuật RF (EnSite X)</th>
+                  <th>Tiến độ 4 mốc</th>
+                  <th>Mốc 1 tháng</th>
+                  <th>Mốc &gt;3 tháng</th>
+                  <th>Trạng thái</th>
+                  <th>Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="patientTableBody"></tbody>
+            </table>
+          </div>
+
+          <!-- Danh sách Thẻ bệnh nhân tối ưu cho Điện thoại (< 640px) -->
+          <div id="mobilePatientCards" class="mobile-patient-cards"></div>
+        </div>
+      </section>
+
+      <!-- TAB 2: BIỂU MẪU NHẬP LIỆU eCRF 4 GIAI ĐOẠN -->
+      <section id="panel-form" class="tab-panel" style="display:none">
+
+        <!-- Thanh chuyển giai đoạn nhanh trên Điện thoại (Sticky dưới Header khi cuộn) -->
+        <div class="mobile-stage-bar">
+          <button type="button" class="mobile-stage-chip active" data-stage-tab="admission">1. Nhập viện</button>
+          <button type="button" class="mobile-stage-chip" data-stage-tab="procedure">2. Đốt RF</button>
+          <button type="button" class="mobile-stage-chip" data-stage-tab="fu1m">3. Khám 1T</button>
+          <button type="button" class="mobile-stage-chip" data-stage-tab="fu3m">4. Khám &gt;3T</button>
+        </div>
+
+        <div class="score-strip">
+          <div>
+            <strong id="formHeaderTitle" style="font-size:0.98rem;color:#0f172a">Bảng RF • Hồ sơ bệnh nhân nghiên cứu</strong>
+            <div style="font-size:0.76rem;color:#475569">Chọn các giai đoạn ở menu bên trái để chuyển nhanh giữa 4 mốc thời gian</div>
+          </div>
+          <div class="score-badges">
+            <span class="score-pill">Tuổi: <strong id="liveAge">-</strong></span>
+            <span class="score-pill">BMI: <strong id="liveBmi">-</strong></span>
+            <span class="score-pill">CHA₂DS₂-VASc: <strong id="liveCha">-</strong></span>
+            <span class="score-pill">HAS-BLED: <strong id="liveHas">-</strong></span>
+          </div>
+        </div>
+
+        <!-- Nội dung Form động -->
+        <div id="crfFormContainer"></div>
+
+        <!-- Thanh công cụ Lưu cố định dưới đáy khi cuộn (Sticky Bottom Bar) -->
+        <div class="sticky-form-actions">
+          <div style="display:flex;gap:0.5rem;flex-wrap:wrap;flex:1">
+            <button type="button" class="btn btn-primary" onclick="window.AF_APP.saveCurrentPatient(false)">
+              Lưu &amp; Giữ màn hình (Sheet RF)
+            </button>
+            <button type="button" class="btn btn-success" onclick="window.AF_APP.saveCurrentPatient(true)">
+              Lưu &amp; Về Danh sách
+            </button>
+          </div>
+          <div style="display:flex;gap:0.4rem">
+            <button type="button" class="btn btn-danger" onclick="window.AF_APP.deleteCurrentPatient()">
+              Xóa
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 3: THỐNG KÊ PILOT & XUẤT DỮ LIỆU -->
+      <section id="panel-stats" class="tab-panel" style="display:none">
+        <div id="statsContentContainer"></div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- MODAL CẤU HÌNH GOOGLE SHEETS & CHIA SẺ NHÓM -->
+  <div id="configModal" class="modal-backdrop">
+    <div class="modal-box">
+      <div class="card-header">
+        <h3 class="card-title">Cấu hình Bảng "RF" trên Google Sheets &amp; Chia sẻ Nhóm</h3>
+        <button class="btn btn-sm btn-secondary" onclick="window.AF_APP.closeConfigModal()">Đóng</button>
+      </div>
+
+      <div class="alert-banner alert-info">
+        <div>
+          <strong>Cách kết nối Google Sheets trong 3 phút (Hoàn toàn miễn phí):</strong>
+          <ol style="margin:0.4rem 0 0 1.1rem;padding:0;font-size:0.82rem">
+            <li>Tạo 1 file <strong>Google Sheet</strong> mới trên Google Drive của bạn.</li>
+            <li>Vào menu <strong>Tiện ích mở rộng (Extensions) &rarr; Apps Script</strong>.</li>
+            <li>Copy toàn bộ nội dung file <code>google-apps-script/Code.gs</code> dán vào rồi nhấn Lưu (Script sẽ tự động tạo duy nhất 1 bảng dữ liệu tên là <strong>RF</strong>).</li>
+            <li>Nhấn <strong>Triển khai (Deploy) &rarr; Tùy chọn triển khai mới &rarr; Ứng dụng web (Web app)</strong>.</li>
+            <li>Chọn Thực thi dưới dạng: <strong>Tôi (Me)</strong> và Ai có quyền truy cập: <strong>Bất kỳ ai (Anyone)</strong> &rarr; Copy <strong>Web App URL</strong> dán vào ô bên dưới.</li>
+          </ol>
+        </div>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.85rem;margin-bottom:1.1rem">
+        <div class="form-group">
+          <label class="form-label">Tên Bác sĩ / Nghiên cứu viên đang nhập máy này</label>
+          <input id="cfgResearcherName" class="form-control" placeholder="VD: BS. Phong" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Google Apps Script Web App URL (Kết nối vào bảng RF)</label>
+          <input id="cfgGasUrl" class="form-control" placeholder="https://script.google.com/macros/s/.../exec" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Mã PIN bảo mật nhóm nghiên cứu (Tùy chọn - nếu đặt trong Code.gs)</label>
+          <input id="cfgPin" type="password" class="form-control" placeholder="Để trống nếu không đặt mã PIN" />
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;padding-top:0.75rem;border-top:1px solid #e2e8f0">
+        <div style="display:flex;gap:0.45rem;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="window.AF_APP.saveConfigFromModal()">
+            Lưu Cấu hình &amp; Tải bảng RF
+          </button>
+          <button class="btn btn-secondary" onclick="window.AF_APP.pushAllLocalToGoogleSheet()">
+            Đẩy dữ liệu hiện có lên Sheet RF
+          </button>
+        </div>
+        <button class="btn btn-success" onclick="window.AF_APP.copyShareableTeamLink()">
+          Copy Link Chia sẻ Nhóm
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Container -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="js/schema.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
